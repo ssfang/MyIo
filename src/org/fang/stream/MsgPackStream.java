@@ -117,7 +117,7 @@ public class MsgPackStream<T extends OutputStream> extends FilterOutputStream {
 		public static final byte NEGFIXINT_PREFIX = (byte) 0xe0;
 	}
 
-	/** 对于已知不超过10字节大小数据写入的缓冲区，如整数，布尔值串等 */
+	/** 对于已知不超过10字节大小数据写入的缓冲区，如整数，布尔值串等，以便一次写入内部流 */
 	ByteBuffer byteBuffer;
 
 	public MsgPackStream(T out) {
