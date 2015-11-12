@@ -8,7 +8,7 @@ import java.io.InputStream;
 /**
  * 添加了buf获取和输出的接口
  * 
- * @author fang
+ * @author fangss
  * 
  */
 public class BytesOutputStream extends ByteArrayOutputStream {
