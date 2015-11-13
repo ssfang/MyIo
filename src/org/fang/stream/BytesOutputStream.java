@@ -1,4 +1,4 @@
-package org.fang.stream;
+package org.fang.msgpack;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

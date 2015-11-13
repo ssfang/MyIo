@@ -1,4 +1,4 @@
-package org.fang.stream;
+package org.fang.msgpack;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
