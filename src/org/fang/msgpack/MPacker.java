@@ -152,11 +152,11 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	private void writeByteIntegerByte(byte ext, int payloadLen, byte extType) throws IOException {
 		// out.write(byteBuffer.put(0, ext).putInt(1, payloadLen).put(5, extType).array(), 0, 6);
 		byteBuffer.put(0, ext).position(1);
-		if (MPackCode.EXT8 == ext) {
+		if (ByteCode.EXT8 == ext) {
 			byteBuffer.put((byte) payloadLen);
-		} else if (MPackCode.EXT16 == ext) {
+		} else if (ByteCode.EXT16 == ext) {
 			byteBuffer.putShort((short) payloadLen);
-		} else if (MPackCode.EXT32 == ext) {
+		} else if (ByteCode.EXT32 == ext) {
 			byteBuffer.putInt(payloadLen);
 		}
 		byteBuffer.put(extType);
@@ -189,12 +189,12 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	}
 
 	public MPacker<T> packNil() throws IOException {
-		writeByte(MPackCode.NIL);
+		writeByte(ByteCode.NIL);
 		return this;
 	}
 
 	public MPacker<T> packBoolean(boolean b) throws IOException {
-		writeByte(b ? MPackCode.TRUE : MPackCode.FALSE);
+		writeByte(b ? ByteCode.TRUE : ByteCode.FALSE);
 		return this;
 	}
 
@@ -312,7 +312,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		if (null != s) {
 			return packString(s);
 		}
-		writeByte(MPackCode.NIL);
+		writeByte(ByteCode.NIL);
 		return this;
 	}
 
@@ -321,7 +321,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 			packBinaryHeader(byteArray.length);
 			write(byteArray);
 		} else {
-			writeByte(MPackCode.NIL);
+			writeByte(ByteCode.NIL);
 		}
 		return this;
 	}
@@ -333,7 +333,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	 * @param obj
 	 * @throws IOException
 	 */
-	public void pack(Object obj) throws IOException {
+	public MPacker<T> pack(Object obj) throws IOException {
 		if (null == obj) {
 			packNil();
 		} else if (obj instanceof Float) {
@@ -356,6 +356,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		} else { // if (obj instanceof CharSequence)
 			packString(obj.toString());
 		}
+		return this;
 	}
 
 	// public MPacker<T> packArrayHeader(int arraySize) throws IOException {
@@ -364,11 +365,11 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	// }
 	//
 	// if (arraySize < (1 << 4)) {
-	// out.write((byte) (MPackCode.FIXARRAY_PREFIX | arraySize));
+	// out.write((byte) (ByteCode.FIXARRAY_PREFIX | arraySize));
 	// } else if (arraySize < (1 << 16)) {
-	// writeByteAndByteBuffer(MPackCode.ARRAY16, byteBuffer.putShort(1, (short) arraySize));
+	// writeByteAndByteBuffer(ByteCode.ARRAY16, byteBuffer.putShort(1, (short) arraySize));
 	// } else {
-	// writeByteAndByteBuffer(MPackCode.ARRAY32, byteBuffer.putInt(1, arraySize));
+	// writeByteAndByteBuffer(ByteCode.ARRAY32, byteBuffer.putInt(1, arraySize));
 	// }
 	// return this;
 	// }
@@ -379,18 +380,18 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	// }
 	//
 	// if (mapSize < (1 << 4)) {
-	// out.write((byte) (MPackCode.FIXMAP_PREFIX | mapSize));
+	// out.write((byte) (ByteCode.FIXMAP_PREFIX | mapSize));
 	// } else if (mapSize < (1 << 16)) {
-	// writeByteAndByteBuffer(MPackCode.MAP16, byteBuffer.putShort(1, (short) mapSize));
+	// writeByteAndByteBuffer(ByteCode.MAP16, byteBuffer.putShort(1, (short) mapSize));
 	// } else {
-	// writeByteAndByteBuffer(MPackCode.MAP32, byteBuffer.putInt(1, mapSize));
+	// writeByteAndByteBuffer(ByteCode.MAP32, byteBuffer.putInt(1, mapSize));
 	// }
 	// return this;
 	// }
 
 	public MPacker<T> packByte(byte b) throws IOException {
 		if (b < -(1 << 5)) {
-			writeByteAndByte(MPackCode.INT8, b);
+			writeByteAndByte(ByteCode.INT8, b);
 		} else {
 			writeByte(b);
 		}
@@ -400,17 +401,17 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	public MPacker<T> packShort(short v) throws IOException {
 		if (v < -(1 << 5)) {
 			if (v < -(1 << 7)) {
-				writeByteAndShort(MPackCode.INT16, v);
+				writeByteAndShort(ByteCode.INT16, v);
 			} else {
-				writeByteAndByte(MPackCode.INT8, (byte) v);
+				writeByteAndByte(ByteCode.INT8, (byte) v);
 			}
 		} else if (v < (1 << 7)) {
 			writeByte((byte) v);
 		} else {
 			if (v < (1 << 8)) {
-				writeByteAndByte(MPackCode.UINT8, (byte) v);
+				writeByteAndByte(ByteCode.UINT8, (byte) v);
 			} else {
-				writeByteAndShort(MPackCode.UINT16, v);
+				writeByteAndShort(ByteCode.UINT16, v);
 			}
 		}
 		return this;
@@ -419,22 +420,22 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	public MPacker<T> packInt(int r) throws IOException {
 		if (r < -(1 << 5)) {
 			if (r < -(1 << 15)) {
-				writeByteAndInt(MPackCode.INT32, r);
+				writeByteAndInt(ByteCode.INT32, r);
 			} else if (r < -(1 << 7)) {
-				writeByteAndShort(MPackCode.INT16, (short) r);
+				writeByteAndShort(ByteCode.INT16, (short) r);
 			} else {
-				writeByteAndByte(MPackCode.INT8, (byte) r);
+				writeByteAndByte(ByteCode.INT8, (byte) r);
 			}
 		} else if (r < (1 << 7)) {
 			writeByte((byte) r);
 		} else {
 			if (r < (1 << 8)) {
-				writeByteAndByte(MPackCode.UINT8, (byte) r);
+				writeByteAndByte(ByteCode.UINT8, (byte) r);
 			} else if (r < (1 << 16)) {
-				writeByteAndShort(MPackCode.UINT16, (short) r);
+				writeByteAndShort(ByteCode.UINT16, (short) r);
 			} else {
 				// unsigned 32
-				writeByteAndInt(MPackCode.UINT32, r);
+				writeByteAndInt(ByteCode.UINT32, r);
 			}
 		}
 		return this;
@@ -444,15 +445,15 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		if (v < -(1L << 5)) {
 			if (v < -(1L << 15)) {
 				if (v < -(1L << 31)) {
-					writeByteAndLong(MPackCode.INT64, v);
+					writeByteAndLong(ByteCode.INT64, v);
 				} else {
-					writeByteAndInt(MPackCode.INT32, (int) v);
+					writeByteAndInt(ByteCode.INT32, (int) v);
 				}
 			} else {
 				if (v < -(1 << 7)) {
-					writeByteAndShort(MPackCode.INT16, (short) v);
+					writeByteAndShort(ByteCode.INT16, (short) v);
 				} else {
-					writeByteAndByte(MPackCode.INT8, (byte) v);
+					writeByteAndByte(ByteCode.INT8, (byte) v);
 				}
 			}
 		} else if (v < (1 << 7)) {
@@ -461,15 +462,15 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		} else {
 			if (v < (1L << 16)) {
 				if (v < (1 << 8)) {
-					writeByteAndByte(MPackCode.UINT8, (byte) v);
+					writeByteAndByte(ByteCode.UINT8, (byte) v);
 				} else {
-					writeByteAndShort(MPackCode.UINT16, (short) v);
+					writeByteAndShort(ByteCode.UINT16, (short) v);
 				}
 			} else {
 				if (v < (1L << 32)) {
-					writeByteAndInt(MPackCode.UINT32, (int) v);
+					writeByteAndInt(ByteCode.UINT32, (int) v);
 				} else {
-					writeByteAndLong(MPackCode.UINT64, v);
+					writeByteAndLong(ByteCode.UINT64, v);
 				}
 			}
 		}
@@ -480,7 +481,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		if (bi.bitLength() <= 63) {
 			packLong(bi.longValue());
 		} else if (bi.bitLength() == 64 && bi.signum() == 1) {
-			writeByteAndLong(MPackCode.UINT64, bi.longValue());
+			writeByteAndLong(ByteCode.UINT64, bi.longValue());
 		} else {
 			throw new IllegalArgumentException("MessagePack cannot serialize BigInteger larger than 2^64-1");
 		}
@@ -488,12 +489,12 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	}
 
 	public MPacker<T> packFloat(float v) throws IOException {
-		writeByteAndFloat(MPackCode.FLOAT32, v);
+		writeByteAndFloat(ByteCode.FLOAT32, v);
 		return this;
 	}
 
 	public MPacker<T> packDouble(double v) throws IOException {
-		writeByteAndDouble(MPackCode.FLOAT64, v);
+		writeByteAndDouble(ByteCode.FLOAT64, v);
 		return this;
 	}
 
@@ -503,11 +504,11 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		}
 
 		if (arraySize < (1 << 4)) {
-			writeByte((byte) (MPackCode.FIXARRAY_PREFIX | arraySize));
+			writeByte((byte) (ByteCode.FIXARRAY_PREFIX | arraySize));
 		} else if (arraySize < (1 << 16)) {
-			writeByteAndShort(MPackCode.ARRAY16, (short) arraySize);
+			writeByteAndShort(ByteCode.ARRAY16, (short) arraySize);
 		} else {
-			writeByteAndInt(MPackCode.ARRAY32, arraySize);
+			writeByteAndInt(ByteCode.ARRAY32, arraySize);
 		}
 		return this;
 	}
@@ -518,11 +519,11 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		}
 
 		if (mapSize < (1 << 4)) {
-			writeByte((byte) (MPackCode.FIXMAP_PREFIX | mapSize));
+			writeByte((byte) (ByteCode.FIXMAP_PREFIX | mapSize));
 		} else if (mapSize < (1 << 16)) {
-			writeByteAndShort(MPackCode.MAP16, (short) mapSize);
+			writeByteAndShort(ByteCode.MAP16, (short) mapSize);
 		} else {
-			writeByteAndInt(MPackCode.MAP32, mapSize);
+			writeByteAndInt(ByteCode.MAP32, mapSize);
 		}
 		return this;
 	}
@@ -531,25 +532,25 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		if (payloadLen < (1 << 8)) {
 			if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
 				if (payloadLen == 1) {
-					writeByteAndByte(MPackCode.FIXEXT1, extType);
+					writeByteAndByte(ByteCode.FIXEXT1, extType);
 				} else if (payloadLen == 2) {
-					writeByteAndByte(MPackCode.FIXEXT2, extType);
+					writeByteAndByte(ByteCode.FIXEXT2, extType);
 				} else if (payloadLen == 4) {
-					writeByteAndByte(MPackCode.FIXEXT4, extType);
+					writeByteAndByte(ByteCode.FIXEXT4, extType);
 				} else if (payloadLen == 8) {
-					writeByteAndByte(MPackCode.FIXEXT8, extType);
+					writeByteAndByte(ByteCode.FIXEXT8, extType);
 				} else if (payloadLen == 16) {
-					writeByteAndByte(MPackCode.FIXEXT16, extType);
+					writeByteAndByte(ByteCode.FIXEXT16, extType);
 				} else {
-					writeByteIntegerByte(MPackCode.EXT8, payloadLen, extType);
+					writeByteIntegerByte(ByteCode.EXT8, payloadLen, extType);
 				}
 			} else {
-				writeByteIntegerByte(MPackCode.EXT8, payloadLen, extType);
+				writeByteIntegerByte(ByteCode.EXT8, payloadLen, extType);
 			}
 		} else if (payloadLen < (1 << 16)) {
-			writeByteIntegerByte(MPackCode.EXT16, payloadLen, extType);
+			writeByteIntegerByte(ByteCode.EXT16, payloadLen, extType);
 		} else {
-			writeByteIntegerByte(MPackCode.EXT32, payloadLen, extType);
+			writeByteIntegerByte(ByteCode.EXT32, payloadLen, extType);
 
 			// TODO support dataLen > 2^31 - 1
 		}
@@ -558,24 +559,24 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 
 	public MPacker<T> packBinaryHeader(int len) throws IOException {
 		if (len < (1 << 8)) {
-			writeByteAndByte(MPackCode.BIN8, (byte) len);
+			writeByteAndByte(ByteCode.BIN8, (byte) len);
 		} else if (len < (1 << 16)) {
-			writeByteAndShort(MPackCode.BIN16, (short) len);
+			writeByteAndShort(ByteCode.BIN16, (short) len);
 		} else {
-			writeByteAndInt(MPackCode.BIN32, len);
+			writeByteAndInt(ByteCode.BIN32, len);
 		}
 		return this;
 	}
 
 	public MPacker<T> packRawStringHeader(int len) throws IOException {
 		if (len < (1 << 5)) {
-			writeByte((byte) (MPackCode.FIXSTR_PREFIX | len));
+			writeByte((byte) (ByteCode.FIXSTR_PREFIX | len));
 		} else if (len < (1 << 8)) {
-			writeByteAndByte(MPackCode.STR8, (byte) len);
+			writeByteAndByte(ByteCode.STR8, (byte) len);
 		} else if (len < (1 << 16)) {
-			writeByteAndShort(MPackCode.STR16, (short) len);
+			writeByteAndShort(ByteCode.STR16, (short) len);
 		} else {
-			writeByteAndInt(MPackCode.STR32, len);
+			writeByteAndInt(ByteCode.STR32, len);
 		}
 		return this;
 	}
