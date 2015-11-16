@@ -1,4 +1,4 @@
-package org.fang.msgpack;
+package org.msgpack;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -28,7 +28,11 @@ import java.security.DigestOutputStream;
  */
 public class MPacker<T extends OutputStream> extends FilterOutputStream {
 
-	/** 对于已知不超过10字节大小数据写入的缓冲区，如整数，布尔值串等，以便一次写入内部流 */
+	/**
+	 * 对于已知不超过10字节大小数据写入的缓冲区，如整数，布尔值串等，以便一次写入内部流
+	 * 
+	 * @see #write(ByteBuffer)
+	 * */
 	ByteBuffer byteBuffer;
 
 	public MPacker(T out) {
@@ -41,32 +45,8 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return (T) out;
 	}
 
-	/**
-	 * <pre>
-	 * ---format name--|-first byte (in binary)-|-first byte (in hex)-
-	 * positive fixint | 0xxxxxxx               | 0x00 - 0x7f
-	 * </pre>
-	 * 
-	 * @param posfixnum
-	 *          0x00 ~ 0x7f / 0 ~ 127
-	 * @throws IOException
-	 */
-	private void writePositiveFixNumber(byte posfixnum) throws IOException {
-		out.write(posfixnum);
-	}
-
-	/**
-	 * <pre>
-	 * ---format name--|-first byte (in binary)-|-first byte (in hex)-
-	 * negative fixint | 111xxxxx               |	0xe0 - 0xff
-	 * </pre>
-	 * 
-	 * @param negfixnum
-	 *          0xe0 ~ 0xff / -32 ~ -1
-	 * @throws IOException
-	 */
-	private void writeNegativeFixNumber(byte negfixnum) throws IOException {
-		out.write(negfixnum);
+	public void write(ByteBuffer byteBuffer) throws IOException {
+		write(byteBuffer.array(), 0, byteBuffer.limit());
 	}
 
 	/**
@@ -118,39 +98,44 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	 * @throws IOException
 	 */
 	public void writeByte(byte b) throws IOException {
-		out.write(b);
+		write(b);
 	}
 
 	// Number family: code+value; String, Binary, Array, Map family: code+length
 
 	private void writeByteAndByte(byte b, byte v) throws IOException {
-		out.write(byteBuffer.put(0, b).put(1, v).array(), 0, 2);
+		byteBuffer.limit(2);
+		write(byteBuffer.put(0, b).put(1, v));
 	}
 
 	private void writeByteAndShort(byte b, short v) throws IOException {
-		out.write(byteBuffer.put(0, b).putShort(1, v).array(), 0, 3);
+		byteBuffer.limit(3);
+		write(byteBuffer.put(0, b).putShort(1, v));
 	}
 
 	private void writeByteAndInt(byte b, int v) throws IOException {
-		out.write(byteBuffer.put(0, b).putInt(1, v).array(), 0, 5);
+		byteBuffer.limit(5);
+		write(byteBuffer.put(0, b).putInt(1, v));
 	}
 
 	private void writeByteAndFloat(byte b, float v) throws IOException {
-		out.write(byteBuffer.put(0, b).putFloat(1, v).array(), 0, 5);
+		byteBuffer.limit(5);
+		write(byteBuffer.put(0, b).putFloat(1, v));
 	}
 
 	private void writeByteAndDouble(byte b, double v) throws IOException {
-		out.write(byteBuffer.put(0, b).putDouble(1, v).array(), 0, 9);
+		byteBuffer.limit(9);
+		write(byteBuffer.put(0, b).putDouble(1, v));
 	}
 
 	private void writeByteAndLong(byte b, long v) throws IOException {
-		out.write(byteBuffer.put(0, b).putLong(1, v).array(), 0, 9);
+		byteBuffer.limit(9);
+		write(byteBuffer.put(0, b).putLong(1, v));
 	}
 
 	// ext format family: code_of_ext + your_ext_data_length + your_ext_type
 
 	private void writeByteIntegerByte(byte ext, int payloadLen, byte extType) throws IOException {
-		// out.write(byteBuffer.put(0, ext).putInt(1, payloadLen).put(5, extType).array(), 0, 6);
 		byteBuffer.put(0, ext).position(1);
 		if (ByteCode.EXT8 == ext) {
 			byteBuffer.put((byte) payloadLen);
@@ -159,8 +144,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		} else if (ByteCode.EXT32 == ext) {
 			byteBuffer.putInt(payloadLen);
 		}
-		byteBuffer.put(extType);
-		out.write(byteBuffer.array(), 0, byteBuffer.limit());
+		write(byteBuffer.put(extType));
 	}
 
 	/** 写入Nil */
@@ -295,7 +279,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 			// TODO encoding error?
 			byte[] bs = s.getBytes("UTF-8");
 			packRawStringHeader(bs.length);
-			out.write(bs, 0, bs.length);
+			write(bs, 0, bs.length);
 			return this;
 		}
 		return packRawStringHeader(0);
@@ -358,36 +342,6 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		}
 		return this;
 	}
-
-	// public MPacker<T> packArrayHeader(int arraySize) throws IOException {
-	// if (arraySize < 0) {
-	// throw new IllegalArgumentException("array size must be >= 0");
-	// }
-	//
-	// if (arraySize < (1 << 4)) {
-	// out.write((byte) (ByteCode.FIXARRAY_PREFIX | arraySize));
-	// } else if (arraySize < (1 << 16)) {
-	// writeByteAndByteBuffer(ByteCode.ARRAY16, byteBuffer.putShort(1, (short) arraySize));
-	// } else {
-	// writeByteAndByteBuffer(ByteCode.ARRAY32, byteBuffer.putInt(1, arraySize));
-	// }
-	// return this;
-	// }
-	//
-	// public MPacker<T> packMapHeader(int mapSize) throws IOException {
-	// if (mapSize < 0) {
-	// throw new IllegalArgumentException("map size must be >= 0");
-	// }
-	//
-	// if (mapSize < (1 << 4)) {
-	// out.write((byte) (ByteCode.FIXMAP_PREFIX | mapSize));
-	// } else if (mapSize < (1 << 16)) {
-	// writeByteAndByteBuffer(ByteCode.MAP16, byteBuffer.putShort(1, (short) mapSize));
-	// } else {
-	// writeByteAndByteBuffer(ByteCode.MAP32, byteBuffer.putInt(1, mapSize));
-	// }
-	// return this;
-	// }
 
 	public MPacker<T> packByte(byte b) throws IOException {
 		if (b < -(1 << 5)) {

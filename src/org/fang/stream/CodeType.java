@@ -1,4 +1,4 @@
-package org.fang.msgpack;
+package org.fang.stream;
 
 /**
  * The prefix code set of MessagePack. See also https://github.com/msgpack/msgpack/blob/master/spec.md for details.
@@ -43,24 +43,24 @@ public interface CodeType {
 	public static final byte MAP16 = (byte) 0xde;
 	public static final byte MAP32 = (byte) 0xdf;
 
-	/**format name: negative fixint,  first byte: 111xxxxx (in binary) / 0xe0 - 0xff (in hex)*/
+	/** format name: negative fixint, first byte: 111xxxxx (in binary) / 0xe0 - 0xff (in hex) */
 	public static final byte NEGFIXINT = (byte) 0xe0;
-	/**format name: positive fixint	,  first byte: 0xxxxxxx (in binary),  0x00 - 0x7f (in hex)*/
+	/** format name: positive fixint , first byte: 0xxxxxxx (in binary), 0x00 - 0x7f (in hex) */
 	public static final byte POSFIXINT = (byte) 0xe1;
-	/**format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f (in hex)*/
+	/** format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f (in hex) */
 	public static final byte FIXMAP = (byte) 0xe2;
-	/**format name: fixarray, first byte: 1001xxxx(in binary), 0x90 - 0x9f (in hex)*/
+	/** format name: fixarray, first byte: 1001xxxx(in binary), 0x90 - 0x9f (in hex) */
 	public static final byte FIXARRAY = (byte) 0xe3;
-	/**format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 - 0xbf (in hex)*/
+	/** format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 - 0xbf (in hex) */
 	public static final byte FIXSTR = (byte) 0xe4;
 
-	// public static final byte BOOLEAN = (byte) 0xe5;
+	public static final byte BOOLEAN = (byte) 0xe5;
 
 	public static final byte FIRST = NIL;
 	public static final byte LAST = FIXSTR;
 
 	/**
-	 *  Type system
+	 * Type system
 	 * 
 	 * <h1>Types</h1>
 	 * <ul>
@@ -79,12 +79,13 @@ public interface CodeType {
 	 * <li>
 	 * <b>Map</b> represents key-value pairs of objects</li>
 	 * <li>
-	 * <b>Extension</b> represents a tuple of type information and a byte array where type information is an integer whose meaning is
-	 * defined by applications<br>
+	 * <b>Extension</b> represents a tuple of type information and a byte array where type information is an integer whose meaning
+	 * is defined by applications<br>
 	 * </li>
 	 * </ul>
+	 * 
 	 * @author fangss
-	 *
+	 * 
 	 */
 	public interface FamilyType {
 		public static final byte UNDEFINED = 0;

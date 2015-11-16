@@ -7,13 +7,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.fang.msgpack.MPacker;
 import org.fang.stream.BytesOutputStream;
+import org.msgpack.MPacker;
 
 public class MPack {
 
@@ -48,6 +50,62 @@ public class MPack {
 		// System.out.println(unpacker.unpackValue());
 	}
 
+	
+
+	public static <T extends Comparable<? super T>> void sort(List<T> list) {
+		Collections.sort(list);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <E, C extends List<E>, R extends List<E>> R newList(Class<C> subClasszOfList) {
+		List<E> emptyList = Collections.emptyList();
+		assert 0 == emptyList.size();
+		String s = null;
+		try {
+			// Type safety: Unchecked invocation newXList(Class<ArrayList>, int)
+			// of the generic method newXList(Class<C>, int) of type Test
+			s = newXList(ArrayList.class, 2);
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+		}
+		assert null == s;
+		return null;
+	}
+
+	private Constructor<?> listConstuctorWithSizeParameter;
+
+	public <C extends List<Object>> void set(Class<C> subClasszOfList) throws NoSuchMethodException, SecurityException {
+		listConstuctorWithSizeParameter = subClasszOfList.getConstructor(int.class);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <E, C extends List<E>, R> R newXList(Class<C> subClasszOfList, int listSize) {
+		try {
+			listConstuctorWithSizeParameter.newInstance(listSize);
+			C list = subClasszOfList.getConstructor(int.class).newInstance(listSize);
+			Collections.fill(list, null);
+			assert listSize == list.size();
+			return (R) subClasszOfList.newInstance();
+		} catch (ReflectiveOperationException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	// @SuppressWarnings("unchecked")
+	// public <E, C extends List<E>, R super C> R newXList2(Class<C> subClasszOfList, int listSize) {
+	// try {
+	// listConstuctorWithSizeParameter.newInstance(listSize);
+	// C list = subClasszOfList.getConstructor(int.class).newInstance(listSize);
+	// Collections.fill(list, null);
+	// assert listSize == list.size();
+	// return (R) subClasszOfList.newInstance();
+	// } catch (ReflectiveOperationException e) {
+	// e.printStackTrace();
+	// }
+	// return null;
+	// }
+	
 	private static final int NIL = 0xc0;
 	private static final int FALSE = 0xc2;
 	private static final int TRUE = 0xc3;

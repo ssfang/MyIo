@@ -1,5 +1,7 @@
-package org.fang.msgpack;
+package org.msgpack;
 
+/** 就面向对象的方便性不如java Enum，虽然无论如何理论上更快，但微小 */
+@Deprecated
 public interface ByteType {
 	/** INT7 */
 	public static final byte POSFIXINT = 0;

@@ -13,7 +13,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 //
-package org.fang.msgpack;
+package org.msgpack;
 
 /**
  * Header of the Extension types
@@ -21,7 +21,7 @@ package org.fang.msgpack;
 public class ExtensionTypeHeader {
 	private final byte type;
 	private final int length;
-
+	
 	/**
 	 * Create an extension type header Example:
 	 * 

@@ -1,4 +1,4 @@
-package org.fang.msgpack;
+package org.msgpack;
 
 public class MPackException extends RuntimeException {
 	private static final long serialVersionUID = -7871964655271083759L;
@@ -6,7 +6,7 @@ public class MPackException extends RuntimeException {
 	public MPackException() {
 		super();
 	}
-
+	
 	public MPackException(String message, Throwable cause) {
 		super(message, cause);
 	}
