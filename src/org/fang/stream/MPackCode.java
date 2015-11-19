@@ -1,4 +1,4 @@
-package org.fang.msgpack;
+package org.fang.stream;
 
 import java.util.Arrays;
 
@@ -10,7 +10,7 @@ public final class MPackCode implements CodeType {
 	/**低8位是code的细分类型，见{@link CodeType}，9-12位的4个比特位为一个字节表示code的家族类型，是粗分类型，见{@link FamilyType}*/
 	private static final short[] CODE2TYPE;
 	// private static final String[] CODETYPE2NAME;
-
+	
 	static {
 		short[] codeTypes = new short[256];
 		CODE2TYPE = codeTypes;
