@@ -46,7 +46,7 @@ import org.msgpack.ByteCode.FamilyType;
  * @param <T>
  * @see <a href="https://github.com/msgpack/msgpack-java">msgpack-java</a>
  */
-public class MUnpacker<T extends InputStream> extends FilterInputStream {
+public class MUnpacker extends FilterInputStream {
 	private final static int NEXT_DIRTY = -1;
 
 	private static final String EMPTY_STRING = "";
@@ -78,11 +78,11 @@ public class MUnpacker<T extends InputStream> extends FilterInputStream {
 	private int nextByte = NEXT_DIRTY;
 
 	/** 缓冲区，用于字节转整数 */
-	ByteBuffer byteBuffer;
+	protected ByteBuffer byteBuffer;
 
 	// byte[] buf = new byte[8];
 
-	public MUnpacker(T in) {
+	public MUnpacker(InputStream in) {
 		super(in);
 		byteBuffer = ByteBuffer.wrap(new byte[8]);
 	}
@@ -115,8 +115,9 @@ public class MUnpacker<T extends InputStream> extends FilterInputStream {
 		return options;
 	}
 
-	public void setOptions(int options) {
+	public MUnpacker setOptions(int options) {
 		this.options = options;
+		return this;
 	}
 
 	/**
@@ -471,8 +472,18 @@ public class MUnpacker<T extends InputStream> extends FilterInputStream {
 	 * 
 	 * @throws IOException
 	 */
-	public void skipValue() throws IOException {
-		int remainingValues = 1;
+	public MUnpacker skipValue() throws IOException {
+		return skipValue(1);
+	}
+
+	/**
+	 * Skip the specified number of values, then move the cursor at the end of the value
+	 * 
+	 * @param valueCount
+	 * @throws IOException
+	 */
+	public MUnpacker skipValue(int valueCount) throws IOException {
+		int remainingValues = valueCount;
 		while (remainingValues > 0) {
 			byte byteCode = readByte();
 			MPackFormat format = MPackFormat.valueOf(byteCode);
@@ -568,6 +579,7 @@ public class MUnpacker<T extends InputStream> extends FilterInputStream {
 			}
 			remainingValues--;
 		}
+		return this;
 	}
 
 	public String unpackString() throws IOException {
@@ -580,8 +592,8 @@ public class MUnpacker<T extends InputStream> extends FilterInputStream {
 			if (strLen <= maxUnpackStringSize) {
 				return new String(readPayload(strLen));
 			}
-			throw new MPackException(
-					String.format("cannot unpack a String of size larger than %,d: %,d", maxUnpackStringSize, strLen));
+			throw new MPackException(String.format("cannot unpack a String of size larger than %,d: %,d",
+					maxUnpackStringSize, strLen));
 		}
 		return EMPTY_STRING;
 	}
@@ -631,14 +643,14 @@ public class MUnpacker<T extends InputStream> extends FilterInputStream {
 	}
 
 	/**
-	 * 映射规则：NIL->null, BOOLEAN->Boolean, INTEGER->Number(UINT64->BigInteger, Other->Long), FLOAT->Double, STRING->String,
+	 * 默认映射规则：NIL->null, BOOLEAN->Boolean, INTEGER->Number(UINT64->BigInteger, Other->Long), FLOAT->Double, STRING->String,
 	 * BINARY->byte[], ARRAY->Object[], MAP->Object[], EXTENSION->
 	 * 
 	 * @param options
 	 * @return
 	 * @throws IOException
 	 */
-	public Object unpack(int options) throws IOException {
+	public Object unpack() throws IOException {
 		byte byteCode = getNextCode();// 先获取类型再调用其他unpack消耗
 		byte bFamilyType = MPackFormat.valueOf(byteCode).getFamily();
 		switch (bFamilyType) {
@@ -672,25 +684,20 @@ public class MUnpacker<T extends InputStream> extends FilterInputStream {
 			int size = unpackMapHeader();
 			Object[] kvs = new Object[size * 2];
 			for (int i = 0; i < size * 2;) {
-				kvs[i] = unpack(options);
+				kvs[i] = unpack();
 				i++;
-				kvs[i] = unpack(options);
+				kvs[i] = unpack();
 				i++;
 			}
 			return kvs;
 		}
 		case FamilyType.EXTENSION: {
 			ExtensionTypeHeader extHeader = unpackExtensionTypeHeader();
-			// extHeader.getType()
-			readPayload(extHeader.getLength());
+			return new ExtensionValueImpl(extHeader.getType(), readPayload(extHeader.getLength()));
 		}
 		default:
 			throw new MPackFormatException("Unknown format family type");
 		}
-	}
-
-	public Object unpack() throws IOException {
-		return unpack(options);
 	}
 
 	/** maximum number of key-value associations of a Map object is (2^32)-1 */

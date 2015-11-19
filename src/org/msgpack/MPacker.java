@@ -19,30 +19,53 @@ import java.security.DigestOutputStream;
  * <li>str format family, bin format family,array format family, map format family,ext format family</li>
  * </ul>
  * 各种格式类型数据，要么一次写入内部流（pack类型方法），要么头部和负载分开写入内部流（packXXHeader的方法+write方法）。
+ * <p/>
+ * <b>Notation in diagrams</b>
+ * 
+ * <pre>
+ * one byte:
+ * +--------+
+ * |        |
+ * +--------+
+ * 
+ * a variable number of bytes:
+ * +========+
+ * |        |
+ * +========+
+ * 
+ * variable number of objects stored in MessagePack format:
+ * +~~~~~~~~~~~~~~~~~+
+ * |                 |
+ * +~~~~~~~~~~~~~~~~~+
+ * </pre>
  * 
  * @author fangss
  * 
- * @param <T>
+ * @param
  * @see <a href="https://github.com/msgpack/msgpack/blob/master/spec.md">MessagePack specification</a>
  * @see <a href="https://github.com/msgpack/msgpack-java">msgpack-java</a>
  */
-public class MPacker<T extends OutputStream> extends FilterOutputStream {
+public class MPacker extends FilterOutputStream {
 
 	/**
 	 * 对于已知不超过10字节大小数据写入的缓冲区，如整数，布尔值串等，以便一次写入内部流
 	 * 
 	 * @see #write(ByteBuffer)
 	 * */
-	ByteBuffer byteBuffer;
+	protected ByteBuffer byteBuffer;
+	/** 统计已经编码的顶级值数量 */
+	protected int valueCount;
+	/** 初始和最后打包完，应该为0，否则嵌套错误 */
+	protected int childCount;
+	protected int binarySize;
 
-	public MPacker(T out) {
+	public MPacker(OutputStream out) {
 		super(out);
 		byteBuffer = ByteBuffer.allocate(10);
 	}
 
-	@SuppressWarnings("unchecked")
-	public T getOutput() {
-		return (T) out;
+	public OutputStream getOutput() {
+		return out;
 	}
 
 	public void write(ByteBuffer byteBuffer) throws IOException {
@@ -148,124 +171,44 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	}
 
 	/** 写入Nil */
-	public MPacker<T> pack() throws IOException {
+	public MPacker pack() throws IOException {
 		return packNil();
 	}
 
 	/** 写入布尔值 */
-	public MPacker<T> pack(boolean b) throws IOException {
+	public MPacker pack(boolean b) throws IOException {
 		return packBoolean(b);
 	}
 
 	/** 写入整数 */
-	public MPacker<T> pack(int i) throws IOException {
+	public MPacker pack(int i) throws IOException {
 		return packInt(i);
 	}
 
 	/** 写入长整数 */
-	public MPacker<T> pack(long l) throws IOException {
+	public MPacker pack(long l) throws IOException {
 		return packLong(l);
 	}
 
 	/** 写入字符串 */
-	public MPacker<T> pack(String s) throws IOException {
+	public MPacker pack(String s) throws IOException {
 		return packString(s);
 	}
 
-	public MPacker<T> packNil() throws IOException {
+	public MPacker pack(MPackValue value) throws IOException {
+		value.writeTo(this);
+		return this;
+	}
+
+	public MPacker packNil() throws IOException {
 		writeByte(ByteCode.NIL);
 		return this;
 	}
 
-	public MPacker<T> packBoolean(boolean b) throws IOException {
+	public MPacker packBoolean(boolean b) throws IOException {
 		writeByte(b ? ByteCode.TRUE : ByteCode.FALSE);
 		return this;
 	}
-
-	// public MPacker<T> packByte(byte b) throws IOException {
-	// if (b < -(1 << 5)) {
-	// writeByteAndByteBuffer(INT8, byteBuffer.put(1, b));
-	// } else {
-	// writeFixedValue(b);
-	// }
-	// return this;
-	// }
-	//
-	// public MPacker<T> packShort(short v) throws IOException {
-	// if (v < -(1 << 5)) {
-	// if (v < -(1 << 7)) {
-	// writeByteAndByteBuffer(INT16, byteBuffer.putShort(1, v));
-	// } else {
-	// writeByteAndByteBuffer(INT8, byteBuffer.put(1, (byte) v));
-	// }
-	// } else if (v < (1 << 7)) {
-	// writeFixedValue((byte) v);
-	// } else {
-	// if (v < (1 << 8)) {
-	// writeByteAndByteBuffer(UINT8, byteBuffer.put(1, (byte) v));
-	// } else {
-	// writeByteAndByteBuffer(UINT16, byteBuffer.putShort(1, v));
-	// }
-	// }
-	// return this;
-	// }
-	//
-	// public MPacker<T> packLong(long longValue) throws IOException {
-	// if (longValue < -(1L << 5)) {
-	// if (longValue < -(1L << 15)) {
-	// if (longValue < -(1L << 31)) {
-	// writeByteAndByteBuffer(INT64, byteBuffer.putLong(1, longValue));
-	// } else {
-	// writeByteAndByteBuffer(INT32, byteBuffer.putInt(1, (int) longValue));
-	// }
-	// } else {
-	// if (longValue < -(1 << 7)) {
-	// writeByteAndByteBuffer(INT16, byteBuffer.putShort(1, (short) longValue));
-	// } else {
-	// writeByteAndByteBuffer(INT8, byteBuffer.put(1, (byte) longValue));
-	// }
-	// }
-	// } else if (longValue < (1 << 7)) {
-	// // fixnum
-	// writeFixedValue((byte) longValue);
-	// } else {
-	// if (longValue < (1L << 16)) {
-	// if (longValue < (1 << 8)) {
-	// writeByteAndByteBuffer(UINT8, byteBuffer.put(1, (byte) longValue));
-	// } else {
-	// writeByteAndByteBuffer(UINT16, byteBuffer.putShort(1, (short) longValue));
-	// }
-	// } else {
-	// if (longValue < (1L << 32)) {
-	// writeByteAndByteBuffer(UINT32, byteBuffer.putInt(1, (int) longValue));
-	// } else {
-	// writeByteAndByteBuffer(UINT64, byteBuffer.putLong(1, longValue));
-	// }
-	// }
-	// }
-	// return this;
-	// }
-	//
-	// public MPacker<T> packBigInteger(BigInteger bi) throws IOException {
-	// if (bi.bitLength() <= 63) {
-	// packLong(bi.longValue());
-	// } else if (bi.bitLength() == 64 && bi.signum() == 1) {
-	// writeByteAndByteBuffer(UINT64, byteBuffer.putLong(1, bi.longValue()));
-	// } else {
-	// throw new IllegalArgumentException("MessagePack cannot serialize BigInteger larger than 2^64-1");
-	// }
-	// return this;
-	// }
-	//
-	// public MPacker<T> packFloat(float v) throws IOException {
-	// writeByteAndByteBuffer(FLOAT32, byteBuffer.putFloat(1, v));
-	// return this;
-	// }
-	//
-	// public MPacker<T> packDouble(double v) throws IOException {
-	// writeByteAndByteBuffer(FLOAT64, byteBuffer.putDouble(1, v));
-	// return this;
-	// }
 
 	/**
 	 * Pack the input String in UTF-8 encoding
@@ -274,7 +217,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	 * @return
 	 * @throws IOException
 	 */
-	public MPacker<T> packString(String s) throws IOException {
+	public MPacker packString(String s) throws IOException {
 		if (s.length() > 0) {
 			// TODO encoding error?
 			byte[] bs = s.getBytes("UTF-8");
@@ -292,7 +235,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	 * @return
 	 * @throws IOException
 	 */
-	public MPacker<T> packOrNil(String s) throws IOException {
+	public MPacker packOrNil(String s) throws IOException {
 		if (null != s) {
 			return packString(s);
 		}
@@ -300,7 +243,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packOrNil(byte[] byteArray) throws IOException {
+	public MPacker packOrNil(byte[] byteArray) throws IOException {
 		if (null != byteArray) {
 			packBinaryHeader(byteArray.length);
 			write(byteArray);
@@ -317,7 +260,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 	 * @param obj
 	 * @throws IOException
 	 */
-	public MPacker<T> pack(Object obj) throws IOException {
+	public MPacker pack(Object obj) throws IOException {
 		if (null == obj) {
 			packNil();
 		} else if (obj instanceof Float) {
@@ -343,7 +286,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packByte(byte b) throws IOException {
+	public MPacker packByte(byte b) throws IOException {
 		if (b < -(1 << 5)) {
 			writeByteAndByte(ByteCode.INT8, b);
 		} else {
@@ -352,7 +295,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packShort(short v) throws IOException {
+	public MPacker packShort(short v) throws IOException {
 		if (v < -(1 << 5)) {
 			if (v < -(1 << 7)) {
 				writeByteAndShort(ByteCode.INT16, v);
@@ -371,7 +314,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packInt(int r) throws IOException {
+	public MPacker packInt(int r) throws IOException {
 		if (r < -(1 << 5)) {
 			if (r < -(1 << 15)) {
 				writeByteAndInt(ByteCode.INT32, r);
@@ -395,7 +338,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packLong(long v) throws IOException {
+	public MPacker packLong(long v) throws IOException {
 		if (v < -(1L << 5)) {
 			if (v < -(1L << 15)) {
 				if (v < -(1L << 31)) {
@@ -431,7 +374,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packBigInteger(BigInteger bi) throws IOException {
+	public MPacker packBigInteger(BigInteger bi) throws IOException {
 		if (bi.bitLength() <= 63) {
 			packLong(bi.longValue());
 		} else if (bi.bitLength() == 64 && bi.signum() == 1) {
@@ -442,17 +385,47 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packFloat(float v) throws IOException {
+	public MPacker packFloat(float v) throws IOException {
 		writeByteAndFloat(ByteCode.FLOAT32, v);
 		return this;
 	}
 
-	public MPacker<T> packDouble(double v) throws IOException {
+	public MPacker packDouble(double v) throws IOException {
 		writeByteAndDouble(ByteCode.FLOAT64, v);
 		return this;
 	}
 
-	public MPacker<T> packArrayHeader(int arraySize) throws IOException {
+	/**
+	 * <pre>
+	 * Array format family stores a sequence of elements in 1, 3, or 5 bytes of extra bytes in addition to the elements.
+	 * 
+	 * 	fixarray stores an array whose length is upto 15 elements:
+	 * 	+--------+~~~~~~~~~~~~~~~~~+
+	 * 	|1001XXXX|    N objects    |
+	 * 	+--------+~~~~~~~~~~~~~~~~~+
+	 * 
+	 * 	array 16 stores an array whose length is upto (2^16)-1 elements:
+	 * 	+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * 	|  0xdc  |YYYYYYYY|YYYYYYYY|    N objects    |
+	 * 	+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * 
+	 * 	array 32 stores an array whose length is upto (2^32)-1 elements:
+	 * 	+--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * 	|  0xdd  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|    N objects    |
+	 * 	+--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * 
+	 * 	where
+	 * XXXX is a 4-bit unsigned integer which represents N
+	 * YYYYYYYY_YYYYYYYY is a 16-bit big-endian unsigned integer which represents N
+	 * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a 32-bit big-endian unsigned integer which represents N
+	 * 	    N is the size of a array
+	 * </pre>
+	 * 
+	 * @param arraySize
+	 * @return
+	 * @throws IOException
+	 */
+	public MPacker packArrayHeader(int arraySize) throws IOException {
 		if (arraySize < 0) {
 			throw new IllegalArgumentException("array size must be >= 0");
 		}
@@ -467,7 +440,40 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packMapHeader(int mapSize) throws IOException {
+	/**
+	 * Map format family stores a sequence of key-value pairs in 1, 3, or 5 bytes of extra bytes in addition to the key-value
+	 * pairs.
+	 * 
+	 * <pre>
+	 * fixmap stores a map whose length is upto 15 elements
+	 * +--------+~~~~~~~~~~~~~~~~~+
+	 * |1000XXXX|   N*2 objects   |
+	 * +--------+~~~~~~~~~~~~~~~~~+
+	 * 
+	 * map 16 stores a map whose length is upto (2^16)-1 elements
+	 * +--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * |  0xde  |YYYYYYYY|YYYYYYYY|   N*2 objects   |
+	 * +--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * 
+	 * map 32 stores a map whose length is upto (2^32)-1 elements
+	 * +--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * |  0xdf  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|   N*2 objects   |
+	 * +--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+	 * 
+	 * where
+	 * XXXX is a 4-bit unsigned integer which represents N
+	 * YYYYYYYY_YYYYYYYY is a 16-bit big-endian unsigned integer which represents N
+	 * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a 32-bit big-endian unsigned integer which represents N
+	 * N is the size of a map
+	 * odd elements in objects are keys of a map
+	 * the next element of a key is its associated value
+	 * </pre>
+	 * 
+	 * @param mapSize
+	 * @return
+	 * @throws IOException
+	 */
+	public MPacker packMapHeader(int mapSize) throws IOException {
 		if (mapSize < 0) {
 			throw new IllegalArgumentException("map size must be >= 0");
 		}
@@ -482,36 +488,115 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packExtensionTypeHeader(byte extType, int payloadLen) throws IOException {
+	/**
+	 * <h1>ext format family</h1>
+	 * 
+	 * <pre>
+	 * Ext format family stores a tuple of an integer and a byte array.
+	 * 
+	 * fixext 1 stores an integer and a byte array whose length is 1 byte
+	 * +--------+--------+--------+
+	 * |  0xd4  |  type  |  data  |
+	 * +--------+--------+--------+
+	 * 
+	 * fixext 2 stores an integer and a byte array whose length is 2 bytes
+	 * +--------+--------+--------+--------+
+	 * |  0xd5  |  type  |       data      |
+	 * +--------+--------+--------+--------+
+	 * 
+	 * fixext 4 stores an integer and a byte array whose length is 4 bytes
+	 * +--------+--------+--------+--------+--------+--------+
+	 * |  0xd6  |  type  |                data               |
+	 * +--------+--------+--------+--------+--------+--------+
+	 * 
+	 * fixext 8 stores an integer and a byte array whose length is 8 bytes
+	 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+	 * |  0xd7  |  type  |                                  data                                 |
+	 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+	 * 
+	 * fixext 16 stores an integer and a byte array whose length is 16 bytes
+	 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+	 * |  0xd8  |  type  |                                  data                                  
+	 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+	 * +--------+--------+--------+--------+--------+--------+--------+--------+
+	 *                               data (cont.)                              |
+	 * +--------+--------+--------+--------+--------+--------+--------+--------+
+	 * 
+	 * ext 8 stores an integer and a byte array whose length is upto (2^8)-1 bytes:
+	 * +--------+--------+--------+========+
+	 * |  0xc7  |XXXXXXXX|  type  |  data  |
+	 * +--------+--------+--------+========+
+	 * 
+	 * ext 16 stores an integer and a byte array whose length is upto (2^16)-1 bytes:
+	 * +--------+--------+--------+--------+========+
+	 * |  0xc8  |YYYYYYYY|YYYYYYYY|  type  |  data  |
+	 * +--------+--------+--------+--------+========+
+	 * 
+	 * ext 32 stores an integer and a byte array whose length is upto (2^32)-1 bytes:
+	 * +--------+--------+--------+--------+--------+--------+========+
+	 * |  0xc9  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|  type  |  data  |
+	 * +--------+--------+--------+--------+--------+--------+========+
+	 * 
+	 * where
+	 * XXXXXXXX is a 8-bit unsigned integer which represents N
+	 * YYYYYYYY_YYYYYYYY is a 16-bit big-endian unsigned integer which represents N
+	 * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a big-endian 32-bit unsigned integer which represents N
+	 * N is a length of data
+	 * type is a signed 8-bit signed integer
+	 * type < 0 is reserved for future extension including 2-byte type information
+	 * </pre>
+	 * 
+	 * @param extType
+	 * @param payloadLen
+	 * @return
+	 * @throws IOException
+	 * @see https://github.com/msgpack/msgpack/blob/master/spec.md#formats-ext
+	 */
+	public MPacker packExtensionTypeHeader(byte extType, int payloadLen) throws IOException {
+		byte byteCode;
+		int sizeOfNonFixExtPayloadLen;
 		if (payloadLen < (1 << 8)) {
 			if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
 				if (payloadLen == 1) {
-					writeByteAndByte(ByteCode.FIXEXT1, extType);
+					byteCode = ByteCode.FIXEXT1;
 				} else if (payloadLen == 2) {
-					writeByteAndByte(ByteCode.FIXEXT2, extType);
+					byteCode = ByteCode.FIXEXT2;
 				} else if (payloadLen == 4) {
-					writeByteAndByte(ByteCode.FIXEXT4, extType);
+					byteCode = ByteCode.FIXEXT4;
 				} else if (payloadLen == 8) {
-					writeByteAndByte(ByteCode.FIXEXT8, extType);
+					byteCode = ByteCode.FIXEXT8;
 				} else if (payloadLen == 16) {
-					writeByteAndByte(ByteCode.FIXEXT16, extType);
+					byteCode = ByteCode.FIXEXT16;
 				} else {
-					writeByteIntegerByte(ByteCode.EXT8, payloadLen, extType);
+					byteCode = ByteCode.EXT8;
+				}
+				if (ByteCode.EXT8 != byteCode) {
+					writeByteAndByte(byteCode, extType);
+					return this;
 				}
 			} else {
-				writeByteIntegerByte(ByteCode.EXT8, payloadLen, extType);
+				byteCode = ByteCode.EXT8; // -57 = 0xc7
 			}
+			// ByteCode.EXT8
+			byteBuffer.put(1, (byte) payloadLen);
+			sizeOfNonFixExtPayloadLen = 1;
 		} else if (payloadLen < (1 << 16)) {
-			writeByteIntegerByte(ByteCode.EXT16, payloadLen, extType);
+			byteCode = ByteCode.EXT16;// -56 = 0xc8
+			byteBuffer.putShort(1, (short) payloadLen);
+			sizeOfNonFixExtPayloadLen = 2;
 		} else {
-			writeByteIntegerByte(ByteCode.EXT32, payloadLen, extType);
-
+			byteCode = ByteCode.EXT32;// -55 = 0xc9
+			byteBuffer.putInt(1, payloadLen);
+			sizeOfNonFixExtPayloadLen = 4;
 			// TODO support dataLen > 2^31 - 1
 		}
+		byteBuffer.put(0, byteCode).put(1 + sizeOfNonFixExtPayloadLen, extType)
+				.limit(1 + sizeOfNonFixExtPayloadLen + 1);
+		write(byteBuffer);
 		return this;
 	}
 
-	public MPacker<T> packBinaryHeader(int len) throws IOException {
+	public MPacker packBinaryHeader(int len) throws IOException {
 		if (len < (1 << 8)) {
 			writeByteAndByte(ByteCode.BIN8, (byte) len);
 		} else if (len < (1 << 16)) {
@@ -522,7 +607,7 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
-	public MPacker<T> packRawStringHeader(int len) throws IOException {
+	public MPacker packRawStringHeader(int len) throws IOException {
 		if (len < (1 << 5)) {
 			writeByte((byte) (ByteCode.FIXSTR_PREFIX | len));
 		} else if (len < (1 << 8)) {
@@ -535,4 +620,33 @@ public class MPacker<T extends OutputStream> extends FilterOutputStream {
 		return this;
 	}
 
+	/**
+	 * <ul>
+	 * <li>无嵌套 packX: statCount(0);</li>
+	 * <li>
+	 * packArrayHeader(size): statCount(size);<br>
+	 * packMapHeader(size): statCount( 2 * size);</li>
+	 * <li>
+	 * packBinaryHeader(length): statCount(0); binarySize += length;<br>
+	 * packRawStringHeader(length): statCount(0); binarySize += length;<br>
+	 * write(length): if(binarySize > 0) binarySize -= length;</li>
+	 * </ul>
+	 * 
+	 * @param newChildCount
+	 */
+	protected void statCount(int newChildCount) {
+		if (0 == binarySize) {
+			if (childCount == 0)
+				valueCount++;
+			else
+				childCount += newChildCount - 1;
+		} else {
+			throw new MPackException("The last package for Raw String or Binary has not been completed");
+		}
+	}
+
+	/** 获取已经打包的顶级值数量，如22, ["fang", {"ss"=22}, 66], 88, [6, 8]则值数量为4个 */
+	public int getValueCount() {
+		return valueCount;
+	}
 }

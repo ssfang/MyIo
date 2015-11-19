@@ -1,6 +1,5 @@
 package org.msgpack;
 
-
 /**
  * The prefix code set of MessagePack. See also https://github.com/msgpack/msgpack/blob/master/spec.md for details.
  */
@@ -46,7 +45,7 @@ public class ByteCode {
 
 	// Other Helper
 
-	/** @see {@link #isFixInt(byte)} */
+	/** @see {@link #isPosFixInt(byte)} */
 	public static final byte POSFIXINT_MASK = (byte) 0x80;
 
 	/** @see {@link #isFixedMap(byte)} */
@@ -321,9 +320,12 @@ public class ByteCode {
 	// public static final byte NEGFIXINT = 35;
 	//
 	// // 36
-	// static final String[] byteType2Name = new String[] { "POSFIXINT", "FIXMAP", "FIXARRAY", "FIXSTR", "NIL", "NEVER_USED",
-	// "BOOLEAN", "BIN8", "BIN16", "BIN32", "EXT8", "EXT16", "EXT32", "FLOAT32", "FLOAT64", "UINT8", "UINT16", "UINT32",
-	// "UINT64", "INT8", "INT16", "INT32", "INT64", "FIXEXT1", "FIXEXT2", "FIXEXT4", "FIXEXT8", "FIXEXT16", "STR8", "STR16",
+	// static final String[] byteType2Name = new String[] { "POSFIXINT", "FIXMAP", "FIXARRAY", "FIXSTR", "NIL",
+	// "NEVER_USED",
+	// "BOOLEAN", "BIN8", "BIN16", "BIN32", "EXT8", "EXT16", "EXT32", "FLOAT32", "FLOAT64", "UINT8", "UINT16",
+	// "UINT32",
+	// "UINT64", "INT8", "INT16", "INT32", "INT64", "FIXEXT1", "FIXEXT2", "FIXEXT4", "FIXEXT8", "FIXEXT16",
+	// "STR8", "STR16",
 	// "STR32", "ARRAY16", "ARRAY32", "MAP16", "MAP32", "NEGFIXINT" };
 	// }
 
@@ -356,15 +358,32 @@ public class ByteCode {
 	 * 
 	 */
 	public interface FamilyType {
+		/**{@link ByteCode#NEVER_USED} */
 		public static final byte UNDEFINED = 0;
+		/**{@link ByteCode#NIL} */
 		public static final byte NIL = 1;// 0001
+		/**{@link ByteCode#FALSE} , {@link ByteCode#TRUE}*/
 		public static final byte BOOLEAN = 2;// 0010
+		/**
+		 * {@link ByteCode#INT8}, {@link ByteCode#INT16}, {@link ByteCode#INT32}, {@link ByteCode#INT64}, 
+		 * {@link ByteCode#UINT8}, {@link ByteCode#UINT16}, {@link ByteCode#UINT32}, {@link ByteCode#UINT64},
+		 * {@link ByteCode#NEGFIXINT_PREFIX}, {@link ByteCode#POSFIXINT_MASK}
+		 * */
 		public static final byte INTEGER = 3;// 0011
+		/**{@link ByteCode#FLOAT32} , {@link ByteCode#FLOAT64}*/
 		public static final byte FLOAT = 4;// 0100
+		/**{@link ByteCode#FIXSTR_PREFIX}, {@link ByteCode#STR16} , {@link ByteCode#STR32}*/
 		public static final byte STRING = 5;// 0101
+		/**{@link ByteCode#BIN8}, {@link ByteCode#BIN16} , {@link ByteCode#BIN32}*/
 		public static final byte BINARY = 6;// 0110
+		/**{@link ByteCode#FIXARRAY_PREFIX}, {@link ByteCode#ARRAY16} , {@link ByteCode#ARRAY32}*/
 		public static final byte ARRAY = 7;// 0111
+		/**{@link ByteCode#FIXMAP_PREFIX}, {@link ByteCode#MAP16} , {@link ByteCode#MAP32}*/
 		public static final byte MAP = 8;// 1000
+		/**
+		 * {@link ByteCode#FIXEXT1}, {@link ByteCode#FIXEXT2}, {@link ByteCode#FIXEXT4}, 
+		 * {@link ByteCode#FIXEXT8}, {@link ByteCode#FIXEXT16}
+		 * */
 		public static final byte EXTENSION = 9;// 1001
 	}
 }
