@@ -262,6 +262,12 @@ public class MUnpacker extends FilterInputStream {
 		return MPackFormat.valueOf(getNextCode());
 	}
 
+	/**
+	 * @return null
+	 * @throws MPackFormatException
+	 *           类型不是boolean的异常
+	 * @throws IOException
+	 */
 	public <V> V unpackNil() throws IOException {
 		byte b = readByte();
 		if (b == ByteCode.NIL) {
@@ -270,6 +276,13 @@ public class MUnpacker extends FilterInputStream {
 		throw unexpected("Nil", b);
 	}
 
+	/**
+	 * 
+	 * @return a the primitive type boolean value
+	 * @throws MPackFormatException
+	 *           类型不是boolean的异常
+	 * @throws IOException
+	 */
 	public boolean unpackBoolean() throws IOException {
 		byte b = readByte();
 		if (b == ByteCode.FALSE) {
@@ -280,15 +293,31 @@ public class MUnpacker extends FilterInputStream {
 		throw unexpected("boolean", b);
 	}
 
+	public short unpackByte() throws IOException {
+		int i = unpackInt();
+		if (Byte.MIN_VALUE <= i && i <= Byte.MAX_VALUE) {
+			return (byte) i;
+		}
+		throw new MPackIntegerOverflowException(i);
+	}
+
+	public short unpackShort() throws IOException {
+		int i = unpackInt();
+		if (Short.MIN_VALUE <= i && i <= Short.MAX_VALUE) {
+			return (short) i;
+		}
+		throw new MPackIntegerOverflowException(i);
+	}
+
 	/**
 	 * 可以获取Byte，Short，Int， Long值，也许会抛出异常
 	 * 
-	 * @return
-	 * @throws IOException
-	 * @throws RuntimeException
+	 * @return a the primitive type int value
+	 * @throws MPackIntegerOverflowException
 	 *           由于返回值是java int，对于UINT32，UINT64和INT64会有溢出异常
-	 * @throws RuntimeException
+	 * @throws MPackFormatException
 	 *           类型不是整数的异常
+	 * @throws IOException
 	 */
 	public int unpackInt() throws IOException {
 		byte b = readByte();
@@ -335,12 +364,14 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * @return
-	 * @throws IOException
-	 * @throws RuntimeException
-	 *           由于返回值是java int，对于UINT64和INT64会有溢出异常
-	 * @throws RuntimeException
+	 * 可以获取Byte，Short，Int， Long值，也许会抛出异常
+	 * 
+	 * @return a the primitive type long value
+	 * @throws MPackIntegerOverflowException
+	 *           由于返回值是java long，对于UINT64会有溢出异常
+	 * @throws MPackFormatException
 	 *           类型不是整数的异常
+	 * @throws IOException
 	 */
 	public long unpackLong() throws IOException {
 		byte b = readByte();
@@ -410,6 +441,14 @@ public class MUnpacker extends FilterInputStream {
 		throw unexpected("Float", b);
 	}
 
+	/**
+	 * 可以获取整数类型的java BigInteger对象
+	 * 
+	 * @return
+	 * @throws MPackFormatException
+	 *           类型不是整数的异常
+	 * @throws IOException
+	 */
 	public BigInteger unpackBigInteger() throws IOException {
 		byte b = readByte();
 		if (ByteCode.isFixInt(b)) {
@@ -842,28 +881,9 @@ public class MUnpacker extends FilterInputStream {
 		return new MPackFormatException(String.format("Expected %s, but got %s (the code type is %02x)", args));
 	}
 
-	/**
-	 * java中有符号的int无法表示大于{@link Integer#MAX_VALUE}的正整数，我们需要转为java长度为8字节long来表示
-	 * 
-	 * Converts the argument to a {@code long} by an unsigned conversion. In an unsigned conversion to a {@code long}, the
-	 * high-order 32 bits of the {@code long} are zero and the low-order 32 bits are equal to the bits of the integer argument.
-	 * 
-	 * Consequently, zero and positive {@code int} values are mapped to a numerically equal {@code long} value and negative
-	 * {@code int} values are mapped to a {@code long} value equal to the input plus 2<sup>32</sup>.
-	 * 
-	 * @param javaInt
-	 *          the value to convert to an unsigned {@code long}
-	 * @return the argument converted to {@code long} by an unsigned conversion
-	 * @since 1.8
-	 * @see {@link Integer#toUnsignedLong(int)}
-	 */
-	public static long toUnsignedLong(int javaInt) {
-		return 0xffffffffL & javaInt;// ((long) javaInt) & 0xffffffffL;
-	}
-
 	/** java int 无法表示大于{@link Integer#MAX_VALUE}的无符号整数 */
 	private static MPackIntegerOverflowException overflowU32(int u32) {
-		return new MPackIntegerOverflowException(toUnsignedLong(u32));
+		return new MPackIntegerOverflowException(MPack.toUnsignedLong(u32));
 	}
 
 	/** java long 无法表示大于{@link Long#MAX_VALUE}的无符号整数 */
@@ -874,11 +894,10 @@ public class MUnpacker extends FilterInputStream {
 
 	/** java int,long 无法表示小于{@link Integer#MIN_VALUE}，{@link Long#MIN_VALUE}的有符号整数 */
 	private static MPackIntegerOverflowException overflowI(long signedNumber) {
-		BigInteger biginteger = BigInteger.valueOf(signedNumber);
-		return new MPackIntegerOverflowException(biginteger);
+		return new MPackIntegerOverflowException(signedNumber);
 	}
 
 	private static MPackSizeException overflowU32Size(int u32) {
-		return new MPackSizeException(toUnsignedLong(u32));
+		return new MPackSizeException(MPack.toUnsignedLong(u32));
 	}
 }

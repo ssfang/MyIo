@@ -7,17 +7,23 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
- * 添加了buf获取和输出的接口
+ * 添加了buf获取和输出的方法
  * 
  * @author fangss
  * 
  */
 public class BytesOutputStream extends ByteArrayOutputStream {
 
+	/**
+	 * @see ByteArrayOutputStream#ByteArrayOutputStream()
+	 */
 	public BytesOutputStream() {
 		super();
 	}
 
+	/**
+	 * @see ByteArrayOutputStream#ByteArrayOutputStream(int)
+	 */
 	public BytesOutputStream(int size) {
 		super(size);
 	}
@@ -59,20 +65,41 @@ public class BytesOutputStream extends ByteArrayOutputStream {
 	/**
 	 * 返回内部字节数组缓冲区
 	 * 
-	 * @return
+	 * @return The inneral byte array
 	 */
 	public byte[] buffer() {
 		return buf;
 	}
 
-	public ByteBuffer sliceByteBuffer() {
+	/**
+	 * Creates a new {@link #ByteBuffer} by wrapping the current inneral byte array buffer with the size of current written bytes.
+	 * 
+	 * @return the created byte buffer.
+	 * @see ByteBuffer#wrap(byte[], int, int)
+	 * @see #size()
+	 */
+	public ByteBuffer asByteBuffer() {
 		return ByteBuffer.wrap(buf, 0, count);
 	}
 
+	/**
+	 * Creates a new {@link #ByteArrayInputStream} on the current inneral byte array buffer with the size of current written bytes.
+	 * 
+	 * @return the created InputStream.
+	 * @see ByteArrayInputStream
+	 * @see #size()
+	 */
 	public InputStream newInputStream() {
 		return new ByteArrayInputStream(buf, 0, count);
 	}
 
+	/**
+	 * Creates a new {@link #ByteArrayInputStream} on the current inneral byte array buffer with the given offset and length.
+	 * 
+	 * @return the created InputStream.
+	 * @see ByteArrayInputStream
+	 * @see #size()
+	 */
 	public InputStream newInputStream(int start, int length) {
 		return new ByteArrayInputStream(buf, start, length);
 	}
