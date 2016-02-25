@@ -1,5 +1,6 @@
 package org.msgpack;
 
+import java.io.BufferedOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -254,8 +255,8 @@ public class MPacker extends FilterOutputStream {
 	}
 
 	/**
-	 * 打包如下类型：null - packNil, CharSequence - packString, Float - packFloat, Double - packDouble, BigInteger - packBigInteger,
-	 * Number - packLong
+	 * 打包如下类型：null - packNil, CharSequence - packString, Float - packFloat, Double - packDouble, BigInteger -
+	 * packBigInteger, Number - packLong
 	 * 
 	 * @param obj
 	 * @throws IOException
@@ -441,8 +442,8 @@ public class MPacker extends FilterOutputStream {
 	}
 
 	/**
-	 * Map format family stores a sequence of key-value pairs in 1, 3, or 5 bytes of extra bytes in addition to the key-value
-	 * pairs.
+	 * Map format family stores a sequence of key-value pairs in 1, 3, or 5 bytes of extra bytes in addition to
+	 * the key-value pairs.
 	 * 
 	 * <pre>
 	 * fixmap stores a map whose length is upto 15 elements
@@ -648,5 +649,10 @@ public class MPacker extends FilterOutputStream {
 	/** 获取已经打包的顶级值数量，如22, ["fang", {"ss"=22}, 66], 88, [6, 8]则值数量为4个 */
 	public int getValueCount() {
 		return valueCount;
+	}
+
+	/** {@code new MPacker(new BufferedOutputStream(out))} */
+	public static MPacker bufferedMPacker(OutputStream out) {
+		return new MPacker(new BufferedOutputStream(out));
 	}
 }

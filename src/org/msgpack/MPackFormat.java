@@ -14,7 +14,10 @@ public enum MPackFormat {
 	 * </pre>
 	 */
 	POSFIXINT(FamilyType.INTEGER),
-	/** MAP4, format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f (in hex) */
+	/**
+	 * MAP4, format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f
+	 * (in hex)
+	 */
 	FIXMAP(FamilyType.MAP),
 	/** ARRAY4 */
 	FIXARRAY(FamilyType.ARRAY),
@@ -58,15 +61,15 @@ public enum MPackFormat {
 	INT32(FamilyType.INTEGER),
 
 	INT64(FamilyType.INTEGER),
-
+	/** The fixed-length value type: 3(1+1+1) bytes */
 	FIXEXT1(FamilyType.EXTENSION),
-
+	/** The fixed-length value type: 4(1+1+2) bytes */
 	FIXEXT2(FamilyType.EXTENSION),
-
+	/** The fixed-length value type: 6(1+1+4) bytes */
 	FIXEXT4(FamilyType.EXTENSION),
-
+	/** The fixed-length value type: 10(1+1+8) bytes */
 	FIXEXT8(FamilyType.EXTENSION),
-
+	/** The fixed-length value type: 18(1+1+16) bytes */
 	FIXEXT16(FamilyType.EXTENSION),
 
 	STR8(FamilyType.STRING),
@@ -102,8 +105,7 @@ public enum MPackFormat {
 	 * Retruns the family corresponding to this MPackFormat
 	 * 
 	 * @return family type
-	 * @throws MPackFormatException
-	 *           if this == NEVER_USED type
+	 * @throws MPackFormatException if this == NEVER_USED type
 	 */
 	public byte getFamily() throws MPackFormatException {
 		if (this == NEVER_USED) {
@@ -112,11 +114,46 @@ public enum MPackFormat {
 		return family;
 	}
 
+	public boolean isNilType() {
+		return this == NIL;
+	}
+
+	public boolean isBooleanType() {
+		return this == BOOLEAN;
+	}
+
+	public boolean isIntegerType() {
+		return FamilyType.INTEGER == family;
+	}
+
+	public boolean isFloatType() {
+		return FamilyType.FLOAT == family;
+	}
+
+	public boolean isStringType() {
+		return FamilyType.STRING == family;
+	}
+
+	public boolean isBinaryType() {
+		return FamilyType.BINARY == family;
+	}
+
+	public boolean isArrayType() {
+		return FamilyType.ARRAY == family;
+	}
+
+	public boolean isMapType() {
+		return FamilyType.MAP == family;
+	}
+
+	public boolean isExtensionType() {
+		return FamilyType.EXTENSION == family;
+	}
+
 	/**
 	 * Returns a MPackFormat type of the specified byte value
 	 * 
-	 * @param b
-	 *          MPackFormat of the given byte
+	 * @param b MPackFormat of the given byte
 	 * @return
 	 */
 	public static MPackFormat valueOf(final byte b) {
@@ -124,7 +161,8 @@ public enum MPackFormat {
 	}
 
 	// /**
-	// * Converting a byte value into {@link MPackFormat} For faster performance, use {@link #valueOf}
+	// * Converting a byte value into {@link MPackFormat} For faster
+	// performance, use {@link #valueOf}
 	// *
 	// * @param b
 	// * MPackFormat of the given byte
@@ -213,7 +251,10 @@ public enum MPackFormat {
 	// }
 	// }
 
-	/** generate a look up table for converting byte values into MPackFormat types */
+	/**
+	 * generate a look up table for converting byte values into MPackFormat
+	 * types
+	 */
 	static MPackFormat[] generateFormatTable() {
 		MPackFormat[] fts = new MPackFormat[256];
 
@@ -290,7 +331,8 @@ public enum MPackFormat {
 	}
 
 	static {
-		// Preparing a look up table for converting byte values into MPackFormat types
+		// Preparing a look up table for converting byte values into MPackFormat
+		// types
 		// MPackFormat[] fts = new MPackFormat[256];
 		// formatTable = fts;
 		// for (int b = 0; b <= 0xFF; ++b) {

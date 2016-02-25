@@ -1,7 +1,8 @@
 package org.msgpack;
 
 /**
- * The prefix code set of MessagePack. See also https://github.com/msgpack/msgpack/blob/master/spec.md for details.
+ * The prefix code set of MessagePack. See also
+ * https://github.com/msgpack/msgpack/blob/master/spec.md for details.
  */
 public class ByteCode {
 
@@ -72,7 +73,8 @@ public class ByteCode {
 	}
 
 	/**
-	 * format name: negative fixint, first byte: 111xxxxx (in binary) / 0xe0 - 0xff (in hex)
+	 * format name: negative fixint, first byte: 111xxxxx (in binary) / 0xe0 -
+	 * 0xff (in hex)
 	 * 
 	 * @param b
 	 * @return
@@ -82,7 +84,8 @@ public class ByteCode {
 	}
 
 	/**
-	 * format name: positive fixint , first byte: 0xxxxxxx (in binary), 0x00 - 0x7f (in hex)
+	 * format name: positive fixint , first byte: 0xxxxxxx (in binary), 0x00 -
+	 * 0x7f (in hex)
 	 * 
 	 * @param b
 	 * @return
@@ -92,7 +95,8 @@ public class ByteCode {
 	}
 
 	/**
-	 * format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f (in hex)
+	 * format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f (in
+	 * hex)
 	 * 
 	 * @param b
 	 * @return
@@ -102,7 +106,8 @@ public class ByteCode {
 	}
 
 	/**
-	 * format name: fixarray, first byte: 1001xxxx(in binary), 0x90 - 0x9f (in hex)
+	 * format name: fixarray, first byte: 1001xxxx(in binary), 0x90 - 0x9f (in
+	 * hex)
 	 * 
 	 * @param b
 	 * @return
@@ -112,7 +117,8 @@ public class ByteCode {
 	}
 
 	/**
-	 * format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 - 0xbf (in hex)
+	 * format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 - 0xbf (in
+	 * hex)
 	 * 
 	 * @param b
 	 * @return
@@ -122,7 +128,8 @@ public class ByteCode {
 	}
 
 	/**
-	 * format name: fixstr alias, first byte: 101xxxxx(in binary), 0xa0 - 0xbf (in hex)
+	 * format name: fixstr alias, first byte: 101xxxxx(in binary), 0xa0 - 0xbf
+	 * (in hex)
 	 * 
 	 * @param b
 	 * @return
@@ -132,7 +139,8 @@ public class ByteCode {
 		return (b & (byte) 0xe0) == FIXSTR_PREFIX;
 	}
 
-	// /** 低8位是code的细分类型，见{@link CodeType}，9-12位的4个比特位为一个字节表示code的家族类型，是粗分类型，见{@link FamilyType} */
+	// /** 低8位是code的细分类型，见{@link
+	// CodeType}，9-12位的4个比特位为一个字节表示code的家族类型，是粗分类型，见{@link FamilyType} */
 	// private static final short[] CODE2TYPE;
 
 	// private static final String[] CODETYPE2NAME;
@@ -156,19 +164,27 @@ public class ByteCode {
 	// static {
 	// short[] codeTypes = new short[256];
 	// CODE2TYPE = codeTypes;
-	// Arrays.fill(codeTypes, 0xe0, 0x100, (short) ((0x00ff & CodeType.NEGFIXINT) + (FamilyType.INTEGER << 8)));
-	// Arrays.fill(codeTypes, 0, 0x80, (short) ((0x00ff & CodeType.POSFIXINT) + (FamilyType.INTEGER << 8)));
-	// Arrays.fill(codeTypes, 0x80, 0x90, (short) ((0x00ff & CodeType.FIXMAP) + (FamilyType.MAP << 8)));
-	// Arrays.fill(codeTypes, 0x90, 0xa0, (short) ((0x00ff & CodeType.FIXARRAY) + (FamilyType.ARRAY << 8)));
-	// Arrays.fill(codeTypes, 0xa0, 0xc0, (short) ((0x00ff & CodeType.FIXSTR) + (FamilyType.STRING << 8)));
+	// Arrays.fill(codeTypes, 0xe0, 0x100, (short) ((0x00ff &
+	// CodeType.NEGFIXINT) + (FamilyType.INTEGER << 8)));
+	// Arrays.fill(codeTypes, 0, 0x80, (short) ((0x00ff & CodeType.POSFIXINT) +
+	// (FamilyType.INTEGER << 8)));
+	// Arrays.fill(codeTypes, 0x80, 0x90, (short) ((0x00ff & CodeType.FIXMAP) +
+	// (FamilyType.MAP << 8)));
+	// Arrays.fill(codeTypes, 0x90, 0xa0, (short) ((0x00ff & CodeType.FIXARRAY)
+	// + (FamilyType.ARRAY << 8)));
+	// Arrays.fill(codeTypes, 0xa0, 0xc0, (short) ((0x00ff & CodeType.FIXSTR) +
+	// (FamilyType.STRING << 8)));
 	// // nil 11000000 0xc0
 	// codeTypes[0xc0] = (0x00ff & CodeType.NIL) + (FamilyType.NIL << 8);
 	// // (never used) 11000001 0xc1
-	// codeTypes[0xc1] = (0x00ff & CodeType.NEVER_USED) + (FamilyType.UNDEFINED << 8);
+	// codeTypes[0xc1] = (0x00ff & CodeType.NEVER_USED) + (FamilyType.UNDEFINED
+	// << 8);
 	// // false 11000010 0xc2
-	// codeTypes[0xc2] = (0x00ff & CodeType.BOOLEAN) + (FamilyType.BOOLEAN << 8);
+	// codeTypes[0xc2] = (0x00ff & CodeType.BOOLEAN) + (FamilyType.BOOLEAN <<
+	// 8);
 	// // true 11000011 0xc3
-	// codeTypes[0xc3] = (0x00ff & CodeType.BOOLEAN) + (FamilyType.BOOLEAN << 8);
+	// codeTypes[0xc3] = (0x00ff & CodeType.BOOLEAN) + (FamilyType.BOOLEAN <<
+	// 8);
 	// // bin 8 11000100 0xc4
 	// codeTypes[0xc4] = (0x00ff & CodeType.BIN8) + (FamilyType.BINARY << 8);
 	// // bin 16 11000101 0xc5
@@ -178,7 +194,8 @@ public class ByteCode {
 	// // ext 8 11000111 0xc7
 	// codeTypes[0xc7] = (0x00ff & CodeType.EXT8) + (FamilyType.EXTENSION << 8);
 	// // ext 16 11001000 0xc8
-	// codeTypes[0xc8] = (0x00ff & CodeType.EXT16) + (FamilyType.EXTENSION << 8);
+	// codeTypes[0xc8] = (0x00ff & CodeType.EXT16) + (FamilyType.EXTENSION <<
+	// 8);
 	// // ext 32 11001001 0xc9
 	// codeTypes[0xc9] = (0x00ff & CodeType.EXT32 + FamilyType.EXTENSION << 8);
 	// // float 32 11001010 0xca
@@ -202,15 +219,20 @@ public class ByteCode {
 	// // int 64 11010011 0xd3
 	// codeTypes[0xd3] = (0x00ff & CodeType.INT64) + (FamilyType.INTEGER << 8);
 	// // fixext 1 11010100 0xd4
-	// codeTypes[0xd4] = (0x00ff & CodeType.FIXEXT1) + (FamilyType.EXTENSION << 8);
+	// codeTypes[0xd4] = (0x00ff & CodeType.FIXEXT1) + (FamilyType.EXTENSION <<
+	// 8);
 	// // fixext 2 11010101 0xd5
-	// codeTypes[0xd5] = (0x00ff & CodeType.FIXEXT2) + (FamilyType.EXTENSION << 8);
+	// codeTypes[0xd5] = (0x00ff & CodeType.FIXEXT2) + (FamilyType.EXTENSION <<
+	// 8);
 	// // fixext 4 11010110 0xd6
-	// codeTypes[0xd6] = (0x00ff & CodeType.FIXEXT4) + (FamilyType.EXTENSION << 8);
+	// codeTypes[0xd6] = (0x00ff & CodeType.FIXEXT4) + (FamilyType.EXTENSION <<
+	// 8);
 	// // fixext 8 11010111 0xd7
-	// codeTypes[0xd7] = (0x00ff & CodeType.FIXEXT8) + (FamilyType.EXTENSION << 8);
+	// codeTypes[0xd7] = (0x00ff & CodeType.FIXEXT8) + (FamilyType.EXTENSION <<
+	// 8);
 	// // fixext 16 11011000 0xd8
-	// codeTypes[0xd8] = (0x00ff & CodeType.FIXEXT16) + (FamilyType.EXTENSION << 8);
+	// codeTypes[0xd8] = (0x00ff & CodeType.FIXEXT16) + (FamilyType.EXTENSION <<
+	// 8);
 	// // str 8 11011001 0xd9
 	// codeTypes[0xd9] = (0x00ff & CodeType.STR8) + (FamilyType.STRING << 8);
 	// // str 16 11011010 0xda
@@ -264,26 +286,35 @@ public class ByteCode {
 	// // public static final byte MAP16 = (byte) 0xde;
 	// // public static final byte MAP32 = (byte) 0xdf;
 	// //
-	// // /** format name: negative fixint, first byte: 111xxxxx (in binary) / 0xe0 - 0xff (in hex) */
+	// // /** format name: negative fixint, first byte: 111xxxxx (in binary) /
+	// 0xe0 - 0xff (in hex) */
 	// // public static final byte NEGFIXINT = (byte) 0xe0;
-	// // /** format name: positive fixint , first byte: 0xxxxxxx (in binary), 0x00 - 0x7f (in hex) */
+	// // /** format name: positive fixint , first byte: 0xxxxxxx (in binary),
+	// 0x00 - 0x7f (in hex) */
 	// // public static final byte POSFIXINT = (byte) 0xe1;
-	// // /** format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f (in hex) */
+	// // /** format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f
+	// (in hex) */
 	// // public static final byte FIXMAP = (byte) 0xe2;
-	// // /** format name: fixarray, first byte: 1001xxxx(in binary), 0x90 - 0x9f (in hex) */
+	// // /** format name: fixarray, first byte: 1001xxxx(in binary), 0x90 -
+	// 0x9f (in hex) */
 	// // public static final byte FIXARRAY = (byte) 0xe3;
-	// // /** format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 - 0xbf (in hex) */
+	// // /** format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 - 0xbf
+	// (in hex) */
 	// // public static final byte FIXSTR = (byte) 0xe4;
 	// //
 	// // public static final byte BOOLEAN = (byte) 0xe5;
 	//
-	// /** INT7 format name: positive fixint , first byte: 0xxxxxxx (in binary), 0x00 - 0x7f (in hex) */
+	// /** INT7 format name: positive fixint , first byte: 0xxxxxxx (in binary),
+	// 0x00 - 0x7f (in hex) */
 	// public static final byte POSFIXINT = 0;
-	// /** MAP4, format name: fixmap, first byte: 1000xxxx(in binary), 0x80 - 0x8f (in hex) */
+	// /** MAP4, format name: fixmap, first byte: 1000xxxx(in binary), 0x80 -
+	// 0x8f (in hex) */
 	// public static final byte FIXMAP = 1;
-	// /** ARRAY4 format name: fixarray, first byte: 1001xxxx(in binary), 0x90 - 0x9f (in hex) */
+	// /** ARRAY4 format name: fixarray, first byte: 1001xxxx(in binary), 0x90 -
+	// 0x9f (in hex) */
 	// public static final byte FIXARRAY = 2;
-	// /** STR5 format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 - 0xbf (in hex) */
+	// /** STR5 format name: fixstr, first byte: 101xxxxx(in binary), 0xa0 -
+	// 0xbf (in hex) */
 	// public static final byte FIXSTR = 3;
 	// public static final byte NIL = 4;
 	// public static final byte NEVER_USED = 5;
@@ -316,23 +347,29 @@ public class ByteCode {
 	// public static final byte ARRAY32 = 32;
 	// public static final byte MAP16 = 33;
 	// public static final byte MAP32 = 34;
-	// /** format name: negative fixint, first byte: 111xxxxx (in binary) / 0xe0 - 0xff (in hex) */
+	// /** format name: negative fixint, first byte: 111xxxxx (in binary) / 0xe0
+	// - 0xff (in hex) */
 	// public static final byte NEGFIXINT = 35;
 	//
 	// // 36
-	// static final String[] byteType2Name = new String[] { "POSFIXINT", "FIXMAP", "FIXARRAY", "FIXSTR", "NIL",
+	// static final String[] byteType2Name = new String[] { "POSFIXINT",
+	// "FIXMAP", "FIXARRAY", "FIXSTR", "NIL",
 	// "NEVER_USED",
-	// "BOOLEAN", "BIN8", "BIN16", "BIN32", "EXT8", "EXT16", "EXT32", "FLOAT32", "FLOAT64", "UINT8", "UINT16",
+	// "BOOLEAN", "BIN8", "BIN16", "BIN32", "EXT8", "EXT16", "EXT32", "FLOAT32",
+	// "FLOAT64", "UINT8", "UINT16",
 	// "UINT32",
-	// "UINT64", "INT8", "INT16", "INT32", "INT64", "FIXEXT1", "FIXEXT2", "FIXEXT4", "FIXEXT8", "FIXEXT16",
+	// "UINT64", "INT8", "INT16", "INT32", "INT64", "FIXEXT1", "FIXEXT2",
+	// "FIXEXT4", "FIXEXT8", "FIXEXT16",
 	// "STR8", "STR16",
 	// "STR32", "ARRAY16", "ARRAY32", "MAP16", "MAP32", "NEGFIXINT" };
 	// }
 
 	/**
-	 * Type system
+	 * <h1>MessagePack specification</h1>
 	 * 
-	 * <h1>Types</h1>
+	 * <h2>Type system</h2>
+	 * 
+	 * <h3>Types</h3>
 	 * <ul>
 	 * <li>
 	 * <b>Integer</b> represents an integer</li>
@@ -349,40 +386,422 @@ public class ByteCode {
 	 * <li>
 	 * <b>Map</b> represents key-value pairs of objects</li>
 	 * <li>
-	 * <b>Extension</b> represents a tuple of type information and a byte array where type information is an integer whose meaning
-	 * is defined by applications<br>
+	 * <b>Extension</b> represents a tuple of type information and a byte array
+	 * where type information is an integer whose meaning is defined by
+	 * applications<br>
 	 * </li>
 	 * </ul>
+	 * 
+	 * <h2>Limitation</h2>
+	 * 
+	 * <ul>
+	 * <li>a value of an Integer object is limited from <code>-(2^63)</code>
+	 * upto <code>(2^64)-1</code></li>
+	 * <li>maximum length of a Binary object is <code>(2^32)-1</code></li>
+	 * <li>maximum byte size of a String object is <code>(2^32)-1</code></li>
+	 * <li>String objects may contain invalid byte sequence and the behavior of
+	 * a deserializer depends on the actual implementation when it received
+	 * invalid byte sequence
+	 * 
+	 * <ul>
+	 * <li>Deserializers should provide functionality to get the original byte
+	 * array so that applications can decide how to handle the object</li>
+	 * </ul>
+	 * </li>
+	 * <li>maximum number of elements of an Array object is
+	 * <code>(2^32)-1</code></li>
+	 * <li>maximum number of key-value associations of a Map object is
+	 * <code>(2^32)-1</code></li>
+	 * </ul>
+	 * 
+	 * <h2>Extension type</h2>
+	 * 
+	 * MessagePack allows applications to define application-specific types
+	 * using the Extension type. Extension type consists of an integer and a
+	 * byte array where the integer represents a kind of types and the byte
+	 * array represents data.
+	 * <p>
+	 * Applications can assign <code>0</code> to <code>127</code> to store
+	 * application-specific type information.
+	 * <p>
+	 * MessagePack reserves <code>-1</code> to <code>-128</code> for future
+	 * extension to add predefined types which will be described in separated
+	 * documents.
+	 * <p>
+	 * 
+	 * <code>[0, 127]: application-specific types </code><br>
+	 * <code>[-128, -1]: reserved for predefined types</code>
+	 * <p>
+	 * 
+	 * <h2>Notation in diagrams</h2>
+	 * 
+	 * <pre>
+	 * <code>one byte:
+	 * +--------+
+	 * |        |
+	 * +--------+
+	 * 
+	 * a variable number of bytes:
+	 * +========+
+	 * |        |
+	 * +========+
+	 * 
+	 * variable number of objects stored in MessagePack format:
+	 * +~~~~~~~~~~~~~~~~~+
+	 * |                 |
+	 * +~~~~~~~~~~~~~~~~~+
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>X</code>, <code>Y</code>, <code>Z</code> and <code>A</code> are the
+	 * symbols that will be replaced by an actual bit.
+	 * </p>
 	 * 
 	 * @author fangss
 	 * 
 	 */
 	public interface FamilyType {
-		/**{@link ByteCode#NEVER_USED} */
+		/** {@link ByteCode#NEVER_USED} */
 		public static final byte UNDEFINED = 0;
-		/**{@link ByteCode#NIL} */
+		/**
+		 * <h2>nil format</h2>
+		 * 
+		 * Nil format stores nil in 1 byte.
+		 * 
+		 * <pre>
+		 * <code>nil:
+		 * +--------+
+		 * |  0xc0  |
+		 * +--------+
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#NIL}
+		 */
 		public static final byte NIL = 1;// 0001
-		/**{@link ByteCode#FALSE} , {@link ByteCode#TRUE}*/
+		/**
+		 * <h2>bool format family</h2>
+		 * 
+		 * Bool format family stores false or true in 1 byte.
+		 * 
+		 * <pre>
+		 * <code>false:
+		 * +--------+
+		 * |  0xc2  |
+		 * +--------+
+		 * 
+		 * true:
+		 * +--------+
+		 * |  0xc3  |
+		 * +--------+
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#FALSE} , {@link ByteCode#TRUE}
+		 */
 		public static final byte BOOLEAN = 2;// 0010
 		/**
-		 * {@link ByteCode#INT8}, {@link ByteCode#INT16}, {@link ByteCode#INT32}, {@link ByteCode#INT64}, 
-		 * {@link ByteCode#UINT8}, {@link ByteCode#UINT16}, {@link ByteCode#UINT32}, {@link ByteCode#UINT64},
-		 * {@link ByteCode#NEGFIXINT_PREFIX}, {@link ByteCode#POSFIXINT_MASK}
+		 * <h2>int format family</h2>
+		 * 
+		 * Int format family stores an integer in 1, 2, 3, 5, or 9 bytes.
+		 * 
+		 * <pre>
+		 * <code>positive fixnum stores 7-bit positive integer
+		 * +--------+
+		 * |0XXXXXXX|
+		 * +--------+
+		 * 
+		 * negative fixnum stores 5-bit negative integer
+		 * +--------+
+		 * |111YYYYY|
+		 * +--------+
+		 * 
+		 * 0XXXXXXX is 8-bit unsigned integer
+		 * 111YYYYY is 8-bit signed integer
+		 * 
+		 * uint 8 stores a 8-bit unsigned integer
+		 * +--------+--------+
+		 * |  0xcc  |ZZZZZZZZ|
+		 * +--------+--------+
+		 * 
+		 * uint 16 stores a 16-bit big-endian unsigned integer
+		 * +--------+--------+--------+
+		 * |  0xcd  |ZZZZZZZZ|ZZZZZZZZ|
+		 * +--------+--------+--------+
+		 * 
+		 * uint 32 stores a 32-bit big-endian unsigned integer
+		 * +--------+--------+--------+--------+--------+
+		 * |  0xce  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|
+		 * +--------+--------+--------+--------+--------+
+		 * 
+		 * uint 64 stores a 64-bit big-endian unsigned integer
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * |  0xcf  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * 
+		 * int 8 stores a 8-bit signed integer
+		 * +--------+--------+
+		 * |  0xd0  |ZZZZZZZZ|
+		 * +--------+--------+
+		 * 
+		 * int 16 stores a 16-bit big-endian signed integer
+		 * +--------+--------+--------+
+		 * |  0xd1  |ZZZZZZZZ|ZZZZZZZZ|
+		 * +--------+--------+--------+
+		 * 
+		 * int 32 stores a 32-bit big-endian signed integer
+		 * +--------+--------+--------+--------+--------+
+		 * |  0xd2  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|
+		 * +--------+--------+--------+--------+--------+
+		 * 
+		 * int 64 stores a 64-bit big-endian signed integer
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * |  0xd3  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#INT8}, {@link ByteCode#INT16}, {@link ByteCode#INT32}
+		 * , {@link ByteCode#INT64}, {@link ByteCode#UINT8},
+		 * {@link ByteCode#UINT16}, {@link ByteCode#UINT32},
+		 * {@link ByteCode#UINT64}, {@link ByteCode#NEGFIXINT_PREFIX},
+		 * {@link ByteCode#POSFIXINT_MASK}
 		 * */
 		public static final byte INTEGER = 3;// 0011
-		/**{@link ByteCode#FLOAT32} , {@link ByteCode#FLOAT64}*/
+		/**
+		 * <h2>float format family</h2>
+		 * 
+		 * Float format family stores a floating point number in 5 bytes or 9
+		 * bytes.
+		 * 
+		 * <pre>
+		 * <code>float 32 stores a floating point number in IEEE 754 single precision floating point number format:
+		 * +--------+--------+--------+--------+--------+
+		 * |  0xca  |XXXXXXXX|XXXXXXXX|XXXXXXXX|XXXXXXXX|
+		 * +--------+--------+--------+--------+--------+
+		 * 
+		 * float 64 stores a floating point number in IEEE 754 double precision floating point number format:
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * |  0xcb  |YYYYYYYY|YYYYYYYY|YYYYYYYY|YYYYYYYY|YYYYYYYY|YYYYYYYY|YYYYYYYY|YYYYYYYY|
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * 
+		 * where
+		 * XXXXXXXX_XXXXXXXX_XXXXXXXX_XXXXXXXX is a big-endian IEEE 754 single precision floating point number.
+		 *   Extension of precision from single-precision to double-precision does not lose precision.
+		 * YYYYYYYY_YYYYYYYY_YYYYYYYY_YYYYYYYY_YYYYYYYY_YYYYYYYY_YYYYYYYY_YYYYYYYY is a big-endian
+		 *   IEEE 754 double precision floating point number
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#FLOAT32} , {@link ByteCode#FLOAT64}
+		 * */
 		public static final byte FLOAT = 4;// 0100
-		/**{@link ByteCode#FIXSTR_PREFIX}, {@link ByteCode#STR16} , {@link ByteCode#STR32}*/
+		/**
+		 * <h2>str format family</h2>
+		 * 
+		 * Str format family stores a byte array in 1, 2, 3, or 5 bytes of extra
+		 * bytes in addition to the size of the byte array.
+		 * 
+		 * <pre>
+		 * <code>fixstr stores a byte array whose length is upto 31 bytes:
+		 * +--------+========+
+		 * |101XXXXX|  data  |
+		 * +--------+========+
+		 * 
+		 * str 8 stores a byte array whose length is upto (2^8)-1 bytes:
+		 * +--------+--------+========+
+		 * |  0xd9  |YYYYYYYY|  data  |
+		 * +--------+--------+========+
+		 * 
+		 * str 16 stores a byte array whose length is upto (2^16)-1 bytes:
+		 * +--------+--------+--------+========+
+		 * |  0xda  |ZZZZZZZZ|ZZZZZZZZ|  data  |
+		 * +--------+--------+--------+========+
+		 * 
+		 * str 32 stores a byte array whose length is upto (2^32)-1 bytes:
+		 * +--------+--------+--------+--------+--------+========+
+		 * |  0xdb  |AAAAAAAA|AAAAAAAA|AAAAAAAA|AAAAAAAA|  data  |
+		 * +--------+--------+--------+--------+--------+========+
+		 * 
+		 * where
+		 * XXXXX is a 5-bit unsigned integer which represents N
+		 * YYYYYYYY is a 8-bit unsigned integer which represents N
+		 * ZZZZZZZZ_ZZZZZZZZ is a 16-bit big-endian unsigned integer which represents N
+		 * AAAAAAAA_AAAAAAAA_AAAAAAAA_AAAAAAAA is a 32-bit big-endian unsigned integer which represents N
+		 * N is the length of data
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#FIXSTR_PREFIX}, {@link ByteCode#STR16} ,
+		 * {@link ByteCode#STR32}
+		 */
 		public static final byte STRING = 5;// 0101
-		/**{@link ByteCode#BIN8}, {@link ByteCode#BIN16} , {@link ByteCode#BIN32}*/
+		/**
+		 * <h2>bin format family</h2>
+		 * 
+		 * Bin format family stores an byte array in 2, 3, or 5 bytes of extra
+		 * bytes in addition to the size of the byte array.
+		 * 
+		 * <pre>
+		 * <code>bin 8 stores a byte array whose length is upto (2^8)-1 bytes:
+		 * +--------+--------+========+
+		 * |  0xc4  |XXXXXXXX|  data  |
+		 * +--------+--------+========+
+		 * 
+		 * bin 16 stores a byte array whose length is upto (2^16)-1 bytes:
+		 * +--------+--------+--------+========+
+		 * |  0xc5  |YYYYYYYY|YYYYYYYY|  data  |
+		 * +--------+--------+--------+========+
+		 * 
+		 * bin 32 stores a byte array whose length is upto (2^32)-1 bytes:
+		 * +--------+--------+--------+--------+--------+========+
+		 * |  0xc6  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|  data  |
+		 * +--------+--------+--------+--------+--------+========+
+		 * 
+		 * where
+		 * XXXXXXXX is a 8-bit unsigned integer which represents N
+		 * YYYYYYYY_YYYYYYYY is a 16-bit big-endian unsigned integer which represents N
+		 * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a 32-bit big-endian unsigned integer which represents N
+		 * N is the length of data
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#BIN8}, {@link ByteCode#BIN16} ,
+		 * {@link ByteCode#BIN32}
+		 * */
 		public static final byte BINARY = 6;// 0110
-		/**{@link ByteCode#FIXARRAY_PREFIX}, {@link ByteCode#ARRAY16} , {@link ByteCode#ARRAY32}*/
+		/**
+		 * <h2>array format family</h2>
+		 * 
+		 * Array format family stores a sequence of elements in 1, 3, or 5 bytes
+		 * of extra bytes in addition to the elements.
+		 * 
+		 * <pre>
+		 * <code>fixarray stores an array whose length is upto 15 elements:
+		 * +--------+~~~~~~~~~~~~~~~~~+
+		 * |1001XXXX|    N objects    |
+		 * +--------+~~~~~~~~~~~~~~~~~+
+		 * 
+		 * array 16 stores an array whose length is upto (2^16)-1 elements:
+		 * +--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * |  0xdc  |YYYYYYYY|YYYYYYYY|    N objects    |
+		 * +--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * 
+		 * array 32 stores an array whose length is upto (2^32)-1 elements:
+		 * +--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * |  0xdd  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|    N objects    |
+		 * +--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * 
+		 * where
+		 * XXXX is a 4-bit unsigned integer which represents N
+		 * YYYYYYYY_YYYYYYYY is a 16-bit big-endian unsigned integer which represents N
+		 * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a 32-bit big-endian unsigned integer which represents N
+		 *     N is the size of a array
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#FIXARRAY_PREFIX}, {@link ByteCode#ARRAY16} ,
+		 * {@link ByteCode#ARRAY32}
+		 */
 		public static final byte ARRAY = 7;// 0111
-		/**{@link ByteCode#FIXMAP_PREFIX}, {@link ByteCode#MAP16} , {@link ByteCode#MAP32}*/
+		/**
+		 * <h2>map format family</h2>
+		 * 
+		 * Map format family stores a sequence of key-value pairs in 1, 3, or 5
+		 * bytes of extra bytes in addition to the key-value pairs.
+		 * 
+		 * <pre>
+		 * <code>fixmap stores a map whose length is upto 15 elements
+		 * +--------+~~~~~~~~~~~~~~~~~+
+		 * |1000XXXX|   N*2 objects   |
+		 * +--------+~~~~~~~~~~~~~~~~~+
+		 * 
+		 * map 16 stores a map whose length is upto (2^16)-1 elements
+		 * +--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * |  0xde  |YYYYYYYY|YYYYYYYY|   N*2 objects   |
+		 * +--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * 
+		 * map 32 stores a map whose length is upto (2^32)-1 elements
+		 * +--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * |  0xdf  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|   N*2 objects   |
+		 * +--------+--------+--------+--------+--------+~~~~~~~~~~~~~~~~~+
+		 * 
+		 * where
+		 * XXXX is a 4-bit unsigned integer which represents N
+		 * YYYYYYYY_YYYYYYYY is a 16-bit big-endian unsigned integer which represents N
+		 * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a 32-bit big-endian unsigned integer which represents N
+		 * N is the size of a map
+		 * odd elements in objects are keys of a map
+		 * the next element of a key is its associated value
+		 * </code>
+		 * </pre>
+		 * 
+		 * {@link ByteCode#FIXMAP_PREFIX}, {@link ByteCode#MAP16} ,
+		 * {@link ByteCode#MAP32}
+		 */
 		public static final byte MAP = 8;// 1000
 		/**
-		 * {@link ByteCode#FIXEXT1}, {@link ByteCode#FIXEXT2}, {@link ByteCode#FIXEXT4}, 
-		 * {@link ByteCode#FIXEXT8}, {@link ByteCode#FIXEXT16}
+		 * <h2>ext format family</h2>
+		 * 
+		 * Ext format family stores a tuple of an integer and a byte array.
+		 * 
+		 * <pre>
+		 * 
+		 * fixext 1 stores an integer and a byte array whose length is 1 byte
+		 * +--------+--------+--------+
+		 * |  0xd4  |  type  |  data  |
+		 * +--------+--------+--------+
+		 * 
+		 * fixext 2 stores an integer and a byte array whose length is 2 bytes
+		 * +--------+--------+--------+--------+
+		 * |  0xd5  |  type  |       data      |
+		 * +--------+--------+--------+--------+
+		 * 
+		 * fixext 4 stores an integer and a byte array whose length is 4 bytes
+		 * +--------+--------+--------+--------+--------+--------+
+		 * |  0xd6  |  type  |                data               |
+		 * +--------+--------+--------+--------+--------+--------+
+		 * 
+		 * fixext 8 stores an integer and a byte array whose length is 8 bytes
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * |  0xd7  |  type  |                                  data                                 |
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * 
+		 * fixext 16 stores an integer and a byte array whose length is 16 bytes
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * |  0xd8  |  type  |                                  data                                  
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+
+		 *                               data (cont.)                              |
+		 * +--------+--------+--------+--------+--------+--------+--------+--------+
+		 * 
+		 * ext 8 stores an integer and a byte array whose length is upto (2^8)-1 bytes:
+		 * +--------+--------+--------+========+
+		 * |  0xc7  |XXXXXXXX|  type  |  data  |
+		 * +--------+--------+--------+========+
+		 * 
+		 * ext 16 stores an integer and a byte array whose length is upto (2^16)-1 bytes:
+		 * +--------+--------+--------+--------+========+
+		 * |  0xc8  |YYYYYYYY|YYYYYYYY|  type  |  data  |
+		 * +--------+--------+--------+--------+========+
+		 * 
+		 * ext 32 stores an integer and a byte array whose length is upto (2^32)-1 bytes:
+		 * +--------+--------+--------+--------+--------+--------+========+
+		 * |  0xc9  |ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|  type  |  data  |
+		 * +--------+--------+--------+--------+--------+--------+========+
+		 * 
+		 * where
+		 * XXXXXXXX is a 8-bit unsigned integer which represents N
+		 * YYYYYYYY_YYYYYYYY is a 16-bit big-endian unsigned integer which represents N
+		 * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a big-endian 32-bit unsigned integer which represents N
+		 * N is a length of data
+		 * type is a signed 8-bit signed integer
+		 * type < 0 is reserved for future extension including 2-byte type information
+		 * </pre>
+		 * 
+		 * {@link ByteCode#FIXEXT1}, {@link ByteCode#FIXEXT2},
+		 * {@link ByteCode#FIXEXT4}, {@link ByteCode#FIXEXT8},
+		 * {@link ByteCode#FIXEXT16}
 		 * */
 		public static final byte EXTENSION = 9;// 1001
 	}

@@ -1,21 +1,22 @@
 package org.msgpack;
 
+import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.msgpack.ByteCode.FamilyType;
 
 /**
- * read开头系列方法适用于读负载。{@link #getNextCode()}。也许ReadableByteChannel或FileChannel需要装饰为InputStream<br>
+ * read开头系列方法适用于读负载。{@link #getNextCode()}
+ * 。也许ReadableByteChannel或FileChannel需要装饰为InputStream<br>
  * 一般用法：
  * 
  * <pre>
@@ -52,11 +53,18 @@ public class MUnpacker extends FilterInputStream {
 	private static final String EMPTY_STRING = "";
 	private static final Object[] EMPTY_ARRAY = new Object[0];
 
-	/** 二进制格式读为字符串，对象类型为{@link String}，默认编码为UTF-8 */
+	/**
+	 * 二进制格式读为字符串，对象类型为{@link String}，默认编码为UTF-8
+	 * 
+	 * @see {@link #binaryToString(byte[])}
+	 */
 	public static final int OPT_READ_BIN_AS_STR = 0x00000001;
 	/** 字符串格式不解码作为二进制输出，对象类型为<code>byte[]</code>，默认编码为UTF-8 */
 	public static final int OPT_READ_STR_AS_BIN = 0x00000002;
-	/** 数组格式作为<code>List&ltObject&gt</code>输出，即<code>Arrays.asList(Object[])</code> */
+	/**
+	 * 数组格式作为<code>List&ltObject&gt</code>输出，即
+	 * <code>Arrays.asList(Object[])</code>
+	 */
 	public static final int OPT_READ_ARRAY_AS_LIST = 0x00000004;
 	/** 整数类型按字节大小和有无符号与Java整数类型做最适合匹配；否则，除了UINT64使用BigInteger，其他一律Long */
 	public static final int OPT_MATCHED_INTEGER = 0x00000008;
@@ -69,8 +77,12 @@ public class MUnpacker extends FilterInputStream {
 	/** Length threshold */
 	private final int readStringMaxSize = Integer.MAX_VALUE, readBinaryMaxSize = Integer.MAX_VALUE;
 
+	@SuppressWarnings("rawtypes")
+	private Class<? extends Map> asMapClass;
+
 	/**
-	 * generally range: 0 to 255, but {@value #NEXT_DIRTY} is also valid, represents dirty.
+	 * generally range: 0 to 255, but {@value #NEXT_DIRTY} is also valid,
+	 * represents dirty.
 	 * 
 	 * @see java.io.FilterInputStream#read()
 	 * @see #getNextCode()
@@ -79,12 +91,13 @@ public class MUnpacker extends FilterInputStream {
 
 	/** 缓冲区，用于字节转整数 */
 	protected ByteBuffer byteBuffer;
+	private static final int BUFFER_LENGTH = 8;
 
 	// byte[] buf = new byte[8];
 
 	public MUnpacker(InputStream in) {
 		super(in);
-		byteBuffer = ByteBuffer.wrap(new byte[8]);
+		byteBuffer = ByteBuffer.wrap(new byte[BUFFER_LENGTH]);
 	}
 
 	@Override
@@ -94,8 +107,9 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Returns true true if this unpacker has more elements. When this returns true, subsequent call to {@link #getNextCodeType()}
-	 * returns a code type. If false, {@link #getNextCodeType()} will throw an EOFException.
+	 * Returns true true if this unpacker has more elements. When this returns
+	 * true, subsequent call to {@link #getNextCodeType()} returns a code type.
+	 * If false, {@link #getNextCodeType()} will throw an EOFException.
 	 * 
 	 * @return true if this unpacker has more elements to read
 	 */
@@ -120,19 +134,29 @@ public class MUnpacker extends FilterInputStream {
 		return this;
 	}
 
+	@SuppressWarnings("rawtypes")
+	public Class<? extends Map> getAsMapClass() {
+		return asMapClass;
+	}
+
+	public MUnpacker setAsMapClass(@SuppressWarnings("rawtypes") Class<? extends Map> asMapClass) {
+		this.asMapClass = asMapClass;
+		return this;
+	}
+
 	/**
 	 * 这个方法功能等于调用{@link #getNextCode()}并赋值<code>nextByte = NEXT_DIRTY;</code><br>
 	 * 即缓存先读取缓存再使缓存无效化，无缓存直接从内部流读取，最后缓存总是无效的
 	 * 
-	 * @return the next byte of this input stream as a signed 8-bit <code>byte</code>.
-	 * @exception EOFException
-	 *              if this input stream has reached the end.
-	 * @exception IOException
-	 *              the stream has been closed and the contained input stream does not support reading after close, or another I/O
-	 *              error occurs.
+	 * @return the next byte of this input streamGusher as a signed 8-bit
+	 *         <code>byte</code>.
+	 * @exception EOFException if this input streamGusher has reached the end.
+	 * @exception IOException the streamGusher has been closed and the contained
+	 *                input streamGusher does not support reading after close,
+	 *                or another I/O error occurs.
 	 * @see java.io.FilterInputStream#in
 	 */
-	private final byte readByte() throws IOException {
+	private final byte readNextByte() throws IOException {
 		int ch;
 		if (NEXT_DIRTY != nextByte) {
 			ch = nextByte;
@@ -145,37 +169,53 @@ public class MUnpacker extends FilterInputStream {
 		return (byte) (ch);
 	}
 
+	/** Read 1 bytes as a byte(4 bits) */
+	private final byte readByte() throws IOException {
+		return consume(1).get(0);
+	}
+
+	/** Read 2 bytes as a short(16 bits) integer */
 	private short readShort() throws IOException {
 		return consume(2).getShort(0);
 	}
 
+	/** Read 4 bytes as a 32 bits integer */
 	private int readInt() throws IOException {
 		return consume(4).getInt(0);
 	}
 
+	/** Read 8 bytes as a long(64 bits) integer */
 	private long readLong() throws IOException {
 		return consume(8).getLong(0);
 	}
 
+	/** Read 8 bytes as a double(64 bits) */
 	private double readDouble() throws IOException {
 		return Double.longBitsToDouble(readLong());
 	}
 
+	/** Read 4 bytes as a float(32 bits) */
 	private float readFloat() throws IOException {
 		return Float.intBitsToFloat(readInt());
 	}
 
+	/** @return 1 byte(4 bits): 0 ~ 255 */
 	private int readUnsignedByte() throws IOException {
 		byte u8 = readByte();
 		return u8 & 0xff;
 	}
 
+	/** @return 2 bytes(8 bits): 0 ~ 65535 */
 	private int readUnsignedShort() throws IOException {
 		short u16 = readShort();
 		return u16 & 0xffff;
 	}
 
-	/** 读取大的长度，Limitation一节规定字节或数组长度或Map键值对个数都不能超过(2^32)-1 */
+	/**
+	 * 读取大的长度，Limitation一节规定字节或数组长度或Map键值对个数都不能超过(2^32)-1
+	 * 
+	 * @return 4 bytes(32 bits): 0 ~ (2^32)-1
+	 */
 	private int readNextLength32() throws IOException {
 		int u32 = readInt();
 		if (u32 < 0) {
@@ -211,10 +251,9 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * 读取到byteBuffer中
+	 * 临时读取到{@link #byteBuffer}中，默认至多{@value #BUFFER_LENGTH}个
 	 * 
-	 * @param nBytes
-	 *          暂时未检查是否在0到{@link byteBuffer#capacity()}之间
+	 * @param nBytes 暂时未检查是否在0到{@link byteBuffer#capacity()}之间
 	 * @return
 	 * @throws EOFException
 	 * @throws IOException
@@ -234,12 +273,12 @@ public class MUnpacker extends FilterInputStream {
 	 * 读取下一个字节，这个字节会被缓存起来，以后都返回缓存值，除非调用read开头的方法或skip方法，会让缓存的字节无效化。<br>
 	 * 即有缓存就读取缓存值，无缓存直接从内部流读取并设置到缓存变量中，最后缓存总是有效的
 	 * 
-	 * @return the next byte of this input stream or the cache byte as a signed 8-bit <code>byte</code>.
-	 * @exception EOFException
-	 *              if this input stream has reached the end.
-	 * @exception IOException
-	 *              the stream has been closed and the contained input stream does not support reading after close, or another I/O
-	 *              error occurs.
+	 * @return the next byte of this input streamGusher or the cache byte as a
+	 *         signed 8-bit <code>byte</code>.
+	 * @exception EOFException if this input streamGusher has reached the end.
+	 * @exception IOException the streamGusher has been closed and the contained
+	 *                input streamGusher does not support reading after close,
+	 *                or another I/O error occurs.
 	 * @see java.io.FilterInputStream#in
 	 */
 	public byte getNextCode() throws IOException {
@@ -264,12 +303,11 @@ public class MUnpacker extends FilterInputStream {
 
 	/**
 	 * @return null
-	 * @throws MPackFormatException
-	 *           类型不是boolean的异常
+	 * @throws MPackFormatException 类型不是boolean的异常
 	 * @throws IOException
 	 */
 	public <V> V unpackNil() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (b == ByteCode.NIL) {
 			return null;
 		}
@@ -279,12 +317,11 @@ public class MUnpacker extends FilterInputStream {
 	/**
 	 * 
 	 * @return a the primitive type boolean value
-	 * @throws MPackFormatException
-	 *           类型不是boolean的异常
+	 * @throws MPackFormatException 类型不是boolean的异常
 	 * @throws IOException
 	 */
 	public boolean unpackBoolean() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (b == ByteCode.FALSE) {
 			return false;
 		} else if (b == ByteCode.TRUE) {
@@ -313,21 +350,20 @@ public class MUnpacker extends FilterInputStream {
 	 * 可以获取Byte，Short，Int， Long值，也许会抛出异常
 	 * 
 	 * @return a the primitive type int value
-	 * @throws MPackIntegerOverflowException
-	 *           由于返回值是java int，对于UINT32，UINT64和INT64会有溢出异常
-	 * @throws MPackFormatException
-	 *           类型不是整数的异常
+	 * @throws MPackIntegerOverflowException 由于返回值是java
+	 *             int，对于UINT32，UINT64和INT64会有溢出异常
+	 * @throws MPackFormatException 类型不是整数的异常
 	 * @throws IOException
 	 */
 	public int unpackInt() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (ByteCode.isFixInt(b)) {
 			nextByte = NEXT_DIRTY;
 			return b;
 		}
 		switch (b) {
 		case ByteCode.UINT8: // unsigned int 8
-			byte u8 = readByte();
+			byte u8 = readNextByte();
 			return u8 & 0xff;
 		case ByteCode.UINT16: // unsigned int 16
 			short u16 = readShort();
@@ -346,7 +382,7 @@ public class MUnpacker extends FilterInputStream {
 			}
 			return (int) u64;
 		case ByteCode.INT8: // signed int 8
-			byte i8 = readByte();
+			byte i8 = readNextByte();
 			return i8;
 		case ByteCode.INT16: // signed int 16
 			short i16 = readShort();
@@ -367,21 +403,19 @@ public class MUnpacker extends FilterInputStream {
 	 * 可以获取Byte，Short，Int， Long值，也许会抛出异常
 	 * 
 	 * @return a the primitive type long value
-	 * @throws MPackIntegerOverflowException
-	 *           由于返回值是java long，对于UINT64会有溢出异常
-	 * @throws MPackFormatException
-	 *           类型不是整数的异常
+	 * @throws MPackIntegerOverflowException 由于返回值是java long，对于UINT64会有溢出异常
+	 * @throws MPackFormatException 类型不是整数的异常
 	 * @throws IOException
 	 */
 	public long unpackLong() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (ByteCode.isFixInt(b)) {
 			nextByte = NEXT_DIRTY;
 			return b;
 		}
 		switch (b) {
 		case ByteCode.UINT8: // unsigned int 8
-			byte u8 = readByte();
+			byte u8 = readNextByte();
 			return u8 & 0xff;
 		case ByteCode.UINT16: // unsigned int 16
 			short u16 = readShort();
@@ -400,7 +434,7 @@ public class MUnpacker extends FilterInputStream {
 			}
 			return u64;
 		case ByteCode.INT8: // signed int 8
-			byte i8 = readByte();
+			byte i8 = readNextByte();
 			return i8;
 		case ByteCode.INT16: // signed int 16
 			short i16 = readShort();
@@ -416,7 +450,7 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	public float unpackFloat() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		switch (b) {
 		case ByteCode.FLOAT32: // float
 			float fv = readFloat();
@@ -429,7 +463,7 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	public double unpackDouble() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		switch (b) {
 		case ByteCode.FLOAT32: // float
 			float fv = readFloat();
@@ -445,18 +479,17 @@ public class MUnpacker extends FilterInputStream {
 	 * 可以获取整数类型的java BigInteger对象
 	 * 
 	 * @return
-	 * @throws MPackFormatException
-	 *           类型不是整数的异常
+	 * @throws MPackFormatException 类型不是整数的异常
 	 * @throws IOException
 	 */
 	public BigInteger unpackBigInteger() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (ByteCode.isFixInt(b)) {
 			return BigInteger.valueOf(b);
 		}
 		switch (b) {
 		case ByteCode.UINT8: // unsigned int 8
-			byte u8 = readByte();
+			byte u8 = readNextByte();
 			return BigInteger.valueOf(u8 & 0xff);
 		case ByteCode.UINT16: // unsigned int 16
 			short u16 = readShort();
@@ -477,7 +510,7 @@ public class MUnpacker extends FilterInputStream {
 				return BigInteger.valueOf(u64);
 			}
 		case ByteCode.INT8: // signed int 8
-			byte i8 = readByte();
+			byte i8 = readNextByte();
 			return BigInteger.valueOf(i8);
 		case ByteCode.INT16: // signed int 16
 			short i16 = readShort();
@@ -493,8 +526,9 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Skip reading the specified number of bytes. Use this method only if you know skipping data is safe. For simply skipping the
-	 * next value, use {@link #skipValue()}.
+	 * Skip reading the specified number of bytes. Use this method only if you
+	 * know skipping data is safe. For simply skipping the next value, use
+	 * {@link #skipValue()}.
 	 * 
 	 * @param numBytes
 	 * @throws IOException
@@ -516,7 +550,8 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Skip the specified number of values, then move the cursor at the end of the value
+	 * Skip the specified number of values, then move the cursor at the end of
+	 * the value
 	 * 
 	 * @param valueCount
 	 * @throws IOException
@@ -524,7 +559,7 @@ public class MUnpacker extends FilterInputStream {
 	public MUnpacker skipValue(int valueCount) throws IOException {
 		int remainingValues = valueCount;
 		while (remainingValues > 0) {
-			byte byteCode = readByte();
+			byte byteCode = readNextByte();
 			MPackFormat format = MPackFormat.valueOf(byteCode);
 			switch (format) {
 			case POSFIXINT:
@@ -611,7 +646,8 @@ public class MUnpacker extends FilterInputStream {
 				remainingValues += readUnsignedShort() * 2;
 				break;
 			case MAP32:
-				remainingValues += readNextLength32() * 2; // TODO check int overflow
+				// TODO check int overflow
+				remainingValues += readNextLength32() * 2;
 				break;
 			case NEVER_USED:
 				throw new RuntimeException(String.format("unknown code: %02x is found", byteCode));
@@ -637,32 +673,24 @@ public class MUnpacker extends FilterInputStream {
 		return EMPTY_STRING;
 	}
 
-	public <O extends Map<Object, Object>> O unpackMap(O mapToUpdate, int count) throws IOException {
-		for (int i = 0; i < count; i++) {
-			Object key = unpack();
-			Object value = unpack();
-			mapToUpdate.put(key, value);
+	public Map<Object, Object> unpackMap(int count) throws IOException {
+		try {
+			// Constructor<Map> constructor =
+			// asMapClass.getConstructor(int.class);
+			// Map<Object, Object> map = constructor.newInstance(count);
+			@SuppressWarnings("unchecked")
+			Map<Object, Object> map = asMapClass.newInstance();
+			for (int i = 0; i < count; i++) {
+				Object key = unpack();
+				Object value = unpack();
+				map.put(key, value);
+			}
+			return map;
+		} catch (InstantiationException e) {
+			throw new MPackFormatException("Unpack map with asMapClass = " + asMapClass.getName(), e);
+		} catch (IllegalAccessException e) {
+			throw new MPackFormatException("Unpack map with asMapClass = " + asMapClass.getName(), e);
 		}
-		return mapToUpdate;
-	}
-
-	/**
-	 * 
-	 * @param <K>
-	 *          the class of the map keys
-	 * @param <V>
-	 *          the class of the map values
-	 * @return 返回调用者期待的类型的键值对，如果不明确类型不要做，因为是unchecked
-	 * @throws IOException
-	 */
-	@SafeVarargs
-	public Map<?, ?> unpackMap() throws IOException {
-		int mapSize = unpackMapHeader();
-		if (mapSize > 0) {
-			HashMap<Object, Object> map = new HashMap<Object, Object>(mapSize);
-			return unpackMap(map, mapSize);
-		}
-		return Collections.emptyMap();
 	}
 
 	public Object[] unpackArray() throws IOException {
@@ -682,8 +710,19 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * 默认映射规则：NIL->null, BOOLEAN->Boolean, INTEGER->Number(UINT64->BigInteger, Other->Long), FLOAT->Double, STRING->String,
-	 * BINARY->byte[], ARRAY->Object[], MAP->Object[], EXTENSION->
+	 * 当标志{@link #OPT_READ_BIN_AS_STR}被设置则这个会被调用
+	 * 
+	 * @param binary
+	 * @return
+	 */
+	protected String binaryToString(byte[] binary) {
+		return new String(binary);
+	}
+
+	/**
+	 * 默认映射规则：NIL->null, BOOLEAN->Boolean, INTEGER->Number(UINT64->BigInteger,
+	 * Other->Long), FLOAT->Double, STRING->String, BINARY->byte[],
+	 * ARRAY->Object[], MAP->Object[], EXTENSION->
 	 * 
 	 * @param options
 	 * @return
@@ -714,21 +753,25 @@ public class MUnpacker extends FilterInputStream {
 		case FamilyType.BINARY: {
 			int length = unpackBinaryHeader();
 			byte[] bs = readPayload(length);
-			return (options & OPT_READ_BIN_AS_STR) > 0 ? new String(bs) : bs;
+			return (options & OPT_READ_BIN_AS_STR) > 0 ? binaryToString(bs) : bs;
 		}
 		case FamilyType.ARRAY: {
 			return (options & OPT_READ_ARRAY_AS_LIST) > 0 ? unpackList() : unpackArray();
 		}
 		case FamilyType.MAP: {
 			int size = unpackMapHeader();
-			Object[] kvs = new Object[size * 2];
-			for (int i = 0; i < size * 2;) {
-				kvs[i] = unpack();
-				i++;
-				kvs[i] = unpack();
-				i++;
+			if (null != asMapClass) {
+				return unpackMap(size);
+			} else {
+				Object[] kvs = new Object[size * 2];
+				for (int i = 0; i < size * 2;) {
+					kvs[i] = unpack();
+					i++;
+					kvs[i] = unpack();
+					i++;
+				}
+				return kvs;
 			}
-			return kvs;
 		}
 		case FamilyType.EXTENSION: {
 			ExtensionTypeHeader extHeader = unpackExtensionTypeHeader();
@@ -741,7 +784,7 @@ public class MUnpacker extends FilterInputStream {
 
 	/** maximum number of key-value associations of a Map object is (2^32)-1 */
 	public int unpackMapHeader() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (ByteCode.isFixedMap(b)) { // fixmap
 			return b & 0x0f;
 		}
@@ -756,7 +799,7 @@ public class MUnpacker extends FilterInputStream {
 
 	/** maximum number of elements of an Array object is (2^32)-1 */
 	public int unpackArrayHeader() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (ByteCode.isFixedArray(b)) { // fixarray
 			return b & 0x0f;
 		}
@@ -771,7 +814,7 @@ public class MUnpacker extends FilterInputStream {
 
 	/** maximum length of a Binary object is (2^32)-1 */
 	public int unpackBinaryHeader() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (ByteCode.isFixedRaw(b)) { // FixRaw
 			return b & 0x1f;
 		}
@@ -784,7 +827,7 @@ public class MUnpacker extends FilterInputStream {
 
 	/** maximum byte size of a String object is (2^32)-1 */
 	public int unpackRawStringHeader() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		if (ByteCode.isFixedRaw(b)) { // FixRaw
 			return b & 0x1f;
 		}
@@ -796,31 +839,31 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	public ExtensionTypeHeader unpackExtensionTypeHeader() throws IOException {
-		byte b = readByte();
+		byte b = readNextByte();
 		switch (b) {
 		case ByteCode.FIXEXT1:
-			return new ExtensionTypeHeader(readByte(), 1);
+			return new ExtensionTypeHeader(readNextByte(), 1);
 		case ByteCode.FIXEXT2:
-			return new ExtensionTypeHeader(readByte(), 2);
+			return new ExtensionTypeHeader(readNextByte(), 2);
 		case ByteCode.FIXEXT4:
-			return new ExtensionTypeHeader(readByte(), 4);
+			return new ExtensionTypeHeader(readNextByte(), 4);
 		case ByteCode.FIXEXT8:
-			return new ExtensionTypeHeader(readByte(), 8);
+			return new ExtensionTypeHeader(readNextByte(), 8);
 		case ByteCode.FIXEXT16:
-			return new ExtensionTypeHeader(readByte(), 16);
+			return new ExtensionTypeHeader(readNextByte(), 16);
 		case ByteCode.EXT8: {
 			int length = readUnsignedShort();
-			byte type = readByte();
+			byte type = readNextByte();
 			return new ExtensionTypeHeader(type, length);
 		}
 		case ByteCode.EXT16: {
 			int length = readUnsignedShort();
-			byte type = readByte();
+			byte type = readNextByte();
 			return new ExtensionTypeHeader(type, length);
 		}
 		case ByteCode.EXT32: {
 			int length = readNextLength32();
-			byte type = readByte();
+			byte type = readNextByte();
 			return new ExtensionTypeHeader(type, length);
 		}
 		}
@@ -843,8 +886,7 @@ public class MUnpacker extends FilterInputStream {
 	/**
 	 * Read up to len bytes of data
 	 * 
-	 * @param len
-	 *          the number of bytes to read
+	 * @param len the number of bytes to read
 	 * @return
 	 * @throws EOFException
 	 * @throws IOException
@@ -868,11 +910,163 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
+	 * Read the specified number of values to an {@link OutputStream}, then move
+	 * the cursor at the end of the value
+	 * 
+	 * @param count the specified number of values to read
+	 * @param out the <code>OutputStream</code> to write to
+	 * @throws IOException
+	 * @see {@link #readValue(int, OutputStream, byte[])}
+	 */
+	public MUnpacker readValue(int count, OutputStream out) throws IOException {
+		byte[] tmpBuffer = new byte[8 * 1024];
+		return readValue(count, out, tmpBuffer);
+	}
+
+	/**
+	 * Read the specified number of values to an {@link OutputStream}, then move
+	 * the cursor at the end of the value
+	 * 
+	 * @param count the specified number of values to read
+	 * @param out the <code>OutputStream</code> to write to
+	 * @param buffer the buffer to use for the copy
+	 * @throws IOException
+	 * @see {@link #skipValue(int)}
+	 */
+	public MUnpacker readValue(int count, OutputStream out, byte[] buffer) throws IOException {
+		int remainingValues = count;
+		while (remainingValues > 0) {
+			int lengthSize = 0, payloadSize = 0;
+			byte byteCode = readNextByte();
+			MPackFormat format = MPackFormat.valueOf(byteCode);
+
+			out.write(byteCode);// ByteCode
+
+			switch (format) {
+			case POSFIXINT:
+			case NEGFIXINT:
+			case BOOLEAN:
+			case NIL:
+				// the value is just included in the ByteCode.
+				break;
+			case FIXMAP: {
+				int mapLen = byteCode & 0x0f;// 1000xxxx
+				remainingValues += mapLen * 2;
+				// the FIXMAP value length is just included in the ByteCode.
+				break;
+			}
+			case FIXARRAY: {
+				int arrayLen = byteCode & 0x0f;// 1001xxxx
+				remainingValues += arrayLen;
+				// the FIXARRAY value length is just included in the ByteCode.
+				break;
+			}
+			case FIXSTR: {
+				int strLen = byteCode & 0x1f; // 101xxxxx
+				MPack.copyLarge(this, out, strLen, buffer);
+				break;
+			}
+			case INT8:
+			case UINT8:
+				lengthSize = 1;
+				consume(1);// read the value
+				break;
+			case INT16:
+			case UINT16:
+				lengthSize = 2;
+				consume(2);// read the value
+				break;
+			case INT32:
+			case UINT32:
+			case FLOAT32:
+				lengthSize = 4;
+				consume(4);// read the value
+				break;
+			case INT64:
+			case UINT64:
+			case FLOAT64:
+				lengthSize = 8;
+				consume(8); // read the value
+				break;
+			case BIN8:
+			case STR8:
+				lengthSize = 1;
+				payloadSize = readUnsignedByte();// read the length header
+				break;
+			case BIN16:
+			case STR16:
+				lengthSize = 2;
+				payloadSize = readUnsignedShort();// read the length header
+				break;
+			case BIN32:
+			case STR32:
+				lengthSize = 4;
+				payloadSize = readNextLength32();// read the length header
+				break;
+			case FIXEXT1:
+				payloadSize = 2;
+				break;
+			case FIXEXT2:
+				payloadSize = 3;
+				break;
+			case FIXEXT4:
+				payloadSize = 5;
+				break;
+			case FIXEXT8:
+				payloadSize = 9;
+				break;
+			case FIXEXT16:
+				lengthSize = 17;
+				break;
+			case EXT8:
+				lengthSize = 1;
+				payloadSize = readUnsignedByte() + 1;
+				break;
+			case EXT16:
+				lengthSize = 2;
+				payloadSize = readUnsignedShort() + 1;
+				break;
+			case EXT32:
+				lengthSize = 4;
+				payloadSize = readNextLength32() + 1;
+				break;
+			case ARRAY16:
+				lengthSize = 2;
+				remainingValues += readUnsignedShort();
+				break;
+			case ARRAY32:
+				lengthSize = 4;
+				remainingValues += readNextLength32();
+				break;
+			case MAP16:
+				lengthSize = 2;
+				remainingValues += readUnsignedShort() * 2;
+				break;
+			case MAP32:
+				lengthSize = 4;
+				// TODO check int overflow
+				remainingValues += readNextLength32() * 2;
+				break;
+			case NEVER_USED:
+				throw new RuntimeException(String.format("unknown code: %02x is found", byteCode));
+			}
+			if (0 < lengthSize) {
+				// copy the number object or the length header of other objects
+				out.write(byteBuffer.array(), 0, lengthSize);
+			}
+			if (payloadSize > 0) {
+				MPack.copyLarge(this, out, payloadSize, buffer);
+			}
+			remainingValues--;
+		}
+		return this;
+	}
+
+	/**
 	 * Create an exception for the case when an unexpected byte value is read
 	 * 
 	 * @param expected
-	 * @param byteCode
-	 *          {@link #getNextCode()}
+	 * @param byteCode {@link #getNextCode()}
 	 * @return
 	 * @throws MPackFormatException
 	 */
@@ -892,12 +1086,25 @@ public class MUnpacker extends FilterInputStream {
 		return new MPackIntegerOverflowException(bi);
 	}
 
-	/** java int,long 无法表示小于{@link Integer#MIN_VALUE}，{@link Long#MIN_VALUE}的有符号整数 */
+	/**
+	 * java int,long 无法表示小于{@link Integer#MIN_VALUE}，{@link Long#MIN_VALUE}
+	 * 的有符号整数
+	 */
 	private static MPackIntegerOverflowException overflowI(long signedNumber) {
 		return new MPackIntegerOverflowException(signedNumber);
 	}
 
 	private static MPackSizeException overflowU32Size(int u32) {
 		return new MPackSizeException(MPack.toUnsignedLong(u32));
+	}
+
+	/** {@code new MUnpacker(new BufferedInputStream(in));} */
+	public static MUnpacker bufferedMUnpacker(InputStream in) {
+		return new MUnpacker(new BufferedInputStream(in));
+	}
+
+	/** {@code new MUnpacker(new BufferedInputStream(in));} */
+	public static MUnpacker buffered(InputStream in) {
+		return new MUnpacker(new BufferedInputStream(in));
 	}
 }

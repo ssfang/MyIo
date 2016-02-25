@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  * @author fangss
  * 
  */
-public class BytesOutputStream extends ByteArrayOutputStream {
+public class BytesOutputStream extends ByteArrayOutputStream implements MPackValue {
 
 	/**
 	 * @see ByteArrayOutputStream#ByteArrayOutputStream()
@@ -72,7 +72,8 @@ public class BytesOutputStream extends ByteArrayOutputStream {
 	}
 
 	/**
-	 * Creates a new {@link #ByteBuffer} by wrapping the current inneral byte array buffer with the size of current written bytes.
+	 * Creates a new {@link #ByteBuffer} by wrapping the current inneral byte
+	 * array buffer with the size of current written bytes.
 	 * 
 	 * @return the created byte buffer.
 	 * @see ByteBuffer#wrap(byte[], int, int)
@@ -83,24 +84,31 @@ public class BytesOutputStream extends ByteArrayOutputStream {
 	}
 
 	/**
-	 * Creates a new {@link #ByteArrayInputStream} on the current inneral byte array buffer with the size of current written bytes.
+	 * Creates a new {@link #ByteArrayInputStream} on the current inneral byte
+	 * array buffer with the size of current written bytes.
 	 * 
 	 * @return the created InputStream.
 	 * @see ByteArrayInputStream
 	 * @see #size()
 	 */
-	public InputStream newInputStream() {
+	public ByteArrayInputStream newInputStream() {
 		return new ByteArrayInputStream(buf, 0, count);
 	}
 
 	/**
-	 * Creates a new {@link #ByteArrayInputStream} on the current inneral byte array buffer with the given offset and length.
+	 * Creates a new {@link #ByteArrayInputStream} on the current inneral byte
+	 * array buffer with the given offset and length.
 	 * 
 	 * @return the created InputStream.
 	 * @see ByteArrayInputStream
 	 * @see #size()
 	 */
-	public InputStream newInputStream(int start, int length) {
+	public ByteArrayInputStream newInputStream(int start, int length) {
 		return new ByteArrayInputStream(buf, start, length);
+	}
+
+	@Override
+	public void writeTo(MPacker packer) throws IOException {
+		packer.write(buf, 0, count);
 	}
 }
