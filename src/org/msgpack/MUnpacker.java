@@ -1016,7 +1016,7 @@ public class MUnpacker extends FilterInputStream {
 				payloadSize = 9;
 				break;
 			case FIXEXT16:
-				lengthSize = 17;
+				payloadSize = 17;
 				break;
 			case EXT8:
 				lengthSize = 1;
