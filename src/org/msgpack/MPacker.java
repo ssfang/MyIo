@@ -7,6 +7,11 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.security.DigestOutputStream;
 
 /**
@@ -17,7 +22,8 @@ import java.security.DigestOutputStream;
  * 另一种，类型（有的包括长度）+长度+负载，也许负载需要多次写入（先头再负载）。
  * <ul>
  * <li>nil format, bool format family, int format family, float format family</li>
- * <li>str format family, bin format family,array format family, map format family,ext format family</li>
+ * <li>str format family, bin format family,array format family, map format
+ * family,ext format family</li>
  * </ul>
  * 各种格式类型数据，要么一次写入内部流（pack类型方法），要么头部和负载分开写入内部流（packXXHeader的方法+write方法）。
  * <p/>
@@ -43,7 +49,9 @@ import java.security.DigestOutputStream;
  * @author fangss
  * 
  * @param
- * @see <a href="https://github.com/msgpack/msgpack/blob/master/spec.md">MessagePack specification</a>
+ * @see <a
+ *      href="https://github.com/msgpack/msgpack/blob/master/spec.md">MessagePack
+ *      specification</a>
  * @see <a href="https://github.com/msgpack/msgpack-java">msgpack-java</a>
  */
 public class MPacker extends FilterOutputStream {
@@ -59,6 +67,10 @@ public class MPacker extends FilterOutputStream {
 	/** 初始和最后打包完，应该为0，否则嵌套错误 */
 	protected int childCount;
 	protected int binarySize;
+	/**
+	 * String encoder
+	 */
+	protected CharsetEncoder charsetEncoder;
 
 	public MPacker(OutputStream out) {
 		super(out);
@@ -67,6 +79,14 @@ public class MPacker extends FilterOutputStream {
 
 	public OutputStream getOutput() {
 		return out;
+	}
+
+	public CharsetEncoder getCharsetEncoder() {
+		if (charsetEncoder == null) {
+			this.charsetEncoder = Charset.forName("UTF-8").newEncoder();
+			byteBuffer = ByteBuffer.allocate(8 * 1024);
+		}
+		return charsetEncoder;
 	}
 
 	public void write(ByteBuffer byteBuffer) throws IOException {
@@ -115,7 +135,8 @@ public class MPacker extends FilterOutputStream {
 	 * </pre>
 	 * 
 	 * </li>
-	 * <li><b>Other fix type header</b>: one byte = code_for_fix_xx + length_of_fix_xx</li>
+	 * <li><b>Other fix type header</b>: one byte = code_for_fix_xx +
+	 * length_of_fix_xx</li>
 	 * </ul>
 	 * 
 	 * @param b
@@ -211,6 +232,25 @@ public class MPacker extends FilterOutputStream {
 		return this;
 	}
 
+	private int encodeStringToBufferAt(String s) {
+		ByteBuffer bb = byteBuffer;
+		int startPosition = bb.position();
+		CharsetEncoder encoder = getCharsetEncoder();
+		CharBuffer in = CharBuffer.wrap(s);
+		CoderResult cr = encoder.encode(in, bb, true);
+		if (cr.isError()) {
+			try {
+				cr.throwException();
+			} catch (CharacterCodingException e) {
+				throw new MPackFormatException("string coding", e);
+			}
+		}
+		if (cr.isUnderflow() || cr.isOverflow()) {
+			return -1;
+		}
+		return bb.position() - startPosition;
+	}
+
 	/**
 	 * Pack the input String in UTF-8 encoding
 	 * 
@@ -221,6 +261,9 @@ public class MPacker extends FilterOutputStream {
 	public MPacker packString(String s) throws IOException {
 		if (s.length() > 0) {
 			// TODO encoding error?
+			// TODO test: JVM performs various optimizations (memory allocation,
+			// reusing encoder etc.) when String.getBytes is used. So, is it
+			// generally faster for small strings?
 			byte[] bs = s.getBytes("UTF-8");
 			packRawStringHeader(bs.length);
 			write(bs, 0, bs.length);
@@ -255,8 +298,8 @@ public class MPacker extends FilterOutputStream {
 	}
 
 	/**
-	 * 打包如下类型：null - packNil, CharSequence - packString, Float - packFloat, Double - packDouble, BigInteger -
-	 * packBigInteger, Number - packLong
+	 * 打包如下类型：null - packNil, CharSequence - packString, Float - packFloat,
+	 * Double - packDouble, BigInteger - packBigInteger, Number - packLong
 	 * 
 	 * @param obj
 	 * @throws IOException
@@ -442,8 +485,8 @@ public class MPacker extends FilterOutputStream {
 	}
 
 	/**
-	 * Map format family stores a sequence of key-value pairs in 1, 3, or 5 bytes of extra bytes in addition to
-	 * the key-value pairs.
+	 * Map format family stores a sequence of key-value pairs in 1, 3, or 5
+	 * bytes of extra bytes in addition to the key-value pairs.
 	 * 
 	 * <pre>
 	 * fixmap stores a map whose length is upto 15 elements
@@ -557,7 +600,11 @@ public class MPacker extends FilterOutputStream {
 		byte byteCode;
 		int sizeOfNonFixExtPayloadLen;
 		if (payloadLen < (1 << 8)) {
-			if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
+			if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check
+																			// whether
+																			// dataLen
+																			// ==
+																			// 2^x
 				if (payloadLen == 1) {
 					byteCode = ByteCode.FIXEXT1;
 				} else if (payloadLen == 2) {

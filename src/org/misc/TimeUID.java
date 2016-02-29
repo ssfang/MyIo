@@ -98,6 +98,6 @@ public class TimeUID implements java.io.Serializable, Comparable<TimeUID> {
 		}
 		long nanoseconds2 = System.nanoTime();
 		long esplased = nanoseconds2 - nanoseconds;
-		System.out.println("esplased " + esplased / (1000 * 1000d) + " s(" + esplased + " ns)");
+		System.out.println("esplased " + esplased / (1000 * 1000d) + " ms(" + esplased + " ns)");
 	}
 }
