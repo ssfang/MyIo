@@ -8,7 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import org.msgpack.ByteCode;
-import org.utils.IOUtil.VainOutputStream;
 
 /**
  * @author fangss

@@ -31,7 +31,7 @@ public class MPack {
 	public static void test() throws java.lang.Exception {
 		// your code goes here
 		BytesOutputStream bytesStream = new BytesOutputStream(128);
-		MPacker<BytesOutputStream> packer = new MPacker<BytesOutputStream>(bytesStream);
+		MPacker packer = new MPacker(bytesStream);
 		packer.packArrayHeader(2);
 		packer.packString("pi.packageName");
 		packer.packInt(2);
