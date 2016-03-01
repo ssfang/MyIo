@@ -31,7 +31,7 @@ public class MPack {
 	public static void test() throws java.lang.Exception {
 		// your code goes here
 		BytesOutputStream bytesStream = new BytesOutputStream(128);
-		MPacker<BytesOutputStream> packer = new MPacker<BytesOutputStream>(bytesStream);
+		MPacker packer = new MPacker(bytesStream);
 		packer.packArrayHeader(2);
 		packer.packString("pi.packageName");
 		packer.packInt(2);
@@ -44,13 +44,12 @@ public class MPack {
 		System.out.println(decoder.decode());
 		System.out.println(decoder.decode());
 
-		// MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(bytesStream.buffer(), 0, bytesStream.size());
+		// MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(bytesStream.buffer(), 0,
+		// bytesStream.size());
 		// System.out.println(unpacker.unpackValue());
 		// System.out.println(unpacker.unpackValue());
 		// System.out.println(unpacker.unpackValue());
 	}
-
-	
 
 	public static <T extends Comparable<? super T>> void sort(List<T> list) {
 		Collections.sort(list);
@@ -74,10 +73,11 @@ public class MPack {
 
 	private Constructor<?> listConstuctorWithSizeParameter;
 
-	public <C extends List<Object>> void set(Class<C> subClasszOfList) throws NoSuchMethodException, SecurityException {
+	public <C extends List<Object>> void set(Class<C> subClasszOfList) throws NoSuchMethodException,
+			SecurityException {
 		listConstuctorWithSizeParameter = subClasszOfList.getConstructor(int.class);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <E, C extends List<E>, R> R newXList(Class<C> subClasszOfList, int listSize) {
 		try {
@@ -91,7 +91,7 @@ public class MPack {
 		}
 		return null;
 	}
-	
+
 	// @SuppressWarnings("unchecked")
 	// public <E, C extends List<E>, R super C> R newXList2(Class<C> subClasszOfList, int listSize) {
 	// try {
@@ -105,7 +105,7 @@ public class MPack {
 	// }
 	// return null;
 	// }
-	
+
 	private static final int NIL = 0xc0;
 	private static final int FALSE = 0xc2;
 	private static final int TRUE = 0xc3;
@@ -513,7 +513,8 @@ public class MPack {
 			final List<?> list = (List) this.decode();
 			for (Object obj : list) {
 				if (!elementClass.isAssignableFrom(obj.getClass())) {
-					throw new ClassCastException("unexpected type found while decoding list: " + obj.getClass().toString());
+					throw new ClassCastException("unexpected type found while decoding list: "
+							+ obj.getClass().toString());
 				}
 			}
 			return (List<T>) list;
@@ -526,10 +527,12 @@ public class MPack {
 				final Object key = entry.getKey();
 				final Object value = entry.getValue();
 				if (!keyClass.isAssignableFrom(key.getClass())) {
-					throw new ClassCastException("unexpected type found while decoding map key: " + key.getClass().toString());
+					throw new ClassCastException("unexpected type found while decoding map key: "
+							+ key.getClass().toString());
 				}
 				if (!valueClass.isAssignableFrom(value.getClass())) {
-					throw new ClassCastException("unexpected type found while decoding map value: " + value.getClass().toString());
+					throw new ClassCastException("unexpected type found while decoding map value: "
+							+ value.getClass().toString());
 				}
 			}
 			return (Map<K, V>) map;
@@ -978,7 +981,8 @@ public class MPack {
 			} else if (object instanceof Extended) {
 				this.encodeExtended((Extended) object);
 			} else {
-				throw new IllegalArgumentException("MPack: no encoding available for objects of type " + object.getClass().toString());
+				throw new IllegalArgumentException("MPack: no encoding available for objects of type "
+						+ object.getClass().toString());
 			}
 		}
 
