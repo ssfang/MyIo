@@ -57,8 +57,8 @@ public class TimeUID implements java.io.Serializable, Comparable<TimeUID> {
 	}
 
 	/**
-	 * Compares two {@code long} values numerically. The value returned is
-	 * identical to what would be returned by:
+	 * Compares two {@code long} values numerically. The value returned is identical to what would be returned
+	 * by:
 	 * 
 	 * <pre>
 	 * Long.valueOf(x).compareTo(Long.valueOf(y))
@@ -66,9 +66,8 @@ public class TimeUID implements java.io.Serializable, Comparable<TimeUID> {
 	 * 
 	 * @param x the first {@code long} to compare
 	 * @param y the second {@code long} to compare
-	 * @return the value {@code 0} if {@code x == y}; a value less than
-	 *         {@code 0} if {@code x < y}; and a value greater than {@code 0} if
-	 *         {@code x > y}
+	 * @return the value {@code 0} if {@code x == y}; a value less than {@code 0} if {@code x < y}; and a
+	 *         value greater than {@code 0} if {@code x > y}
 	 * @since 1.7
 	 */
 	public static int compare(long x, long y) {
@@ -76,14 +75,12 @@ public class TimeUID implements java.io.Serializable, Comparable<TimeUID> {
 	}
 
 	/**
-	 * Compares two {@code long} values numerically treating the values as
-	 * unsigned.
+	 * Compares two {@code long} values numerically treating the values as unsigned.
 	 * 
 	 * @param x the first {@code long} to compare
 	 * @param y the second {@code long} to compare
-	 * @return the value {@code 0} if {@code x == y}; a value less than
-	 *         {@code 0} if {@code x < y} as unsigned values; and a value
-	 *         greater than {@code 0} if {@code x > y} as unsigned values
+	 * @return the value {@code 0} if {@code x == y}; a value less than {@code 0} if {@code x < y} as unsigned
+	 *         values; and a value greater than {@code 0} if {@code x > y} as unsigned values
 	 * @since 1.8
 	 */
 	public static int compareUnsigned(long x, long y) {
@@ -97,7 +94,7 @@ public class TimeUID implements java.io.Serializable, Comparable<TimeUID> {
 			System.out.println(TimeUID.next());
 		}
 		long nanoseconds2 = System.nanoTime();
-		long esplased = nanoseconds2 - nanoseconds;
-		System.out.println("esplased " + esplased / (1000 * 1000d) + " ms(" + esplased + " ns)");
+		long elapsed = nanoseconds2 - nanoseconds;
+		System.out.println("elapsed " + elapsed / (1000 * 1000d) + " ms(" + elapsed + " ns)");
 	}
 }

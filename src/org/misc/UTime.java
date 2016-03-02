@@ -115,11 +115,11 @@ public class UTime {
 		}
 
 		void printResult(String label) {
-			long esplasedMillis = endMillis - startMillis;
+			long elapsedMillis = endMillis - startMillis;
 
-			System.out.println(label + ", esplased: " + endMillis + " - " + startMillis + " = "
-					+ esplasedMillis + " ms");
-			System.out.println(label + ", esplased: " + elapsedNanos / (1000 * 1000 * 1000d) + " s("
+			System.out.println(label + ", elapsed: " + endMillis + " - " + startMillis + " = " + elapsedMillis
+					+ " ms");
+			System.out.println(label + ", elapsed: " + elapsedNanos / (1000 * 1000 * 1000d) + " s("
 					+ elapsedNanos + " ns)");
 
 			System.out.println(label + ", timeDifferenceList = " + timeDifferenceList);
