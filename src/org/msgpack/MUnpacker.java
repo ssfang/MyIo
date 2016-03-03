@@ -9,14 +9,14 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.msgpack.ByteCode.FamilyType;
 
 /**
- * read开头系列方法适用于读负载。{@link #getNextCode()}
- * 。也许ReadableByteChannel或FileChannel需要装饰为InputStream<br>
+ * read开头系列方法适用于读负载。{@link #getNextCode()} 。也许ReadableByteChannel或FileChannel需要装饰为InputStream<br>
  * 一般用法：
  * 
  * <pre>
@@ -62,8 +62,7 @@ public class MUnpacker extends FilterInputStream {
 	/** 字符串格式不解码作为二进制输出，对象类型为<code>byte[]</code>，默认编码为UTF-8 */
 	public static final int OPT_READ_STR_AS_BIN = 0x00000002;
 	/**
-	 * 数组格式作为<code>List&ltObject&gt</code>输出，即
-	 * <code>Arrays.asList(Object[])</code>
+	 * 数组格式作为<code>List&ltObject&gt</code>输出，即 <code>Arrays.asList(Object[])</code>
 	 */
 	public static final int OPT_READ_ARRAY_AS_LIST = 0x00000004;
 	/** 整数类型按字节大小和有无符号与Java整数类型做最适合匹配；否则，除了UINT64使用BigInteger，其他一律Long */
@@ -81,8 +80,7 @@ public class MUnpacker extends FilterInputStream {
 	private Class<? extends Map> asMapClass;
 
 	/**
-	 * generally range: 0 to 255, but {@value #NEXT_DIRTY} is also valid,
-	 * represents dirty.
+	 * generally range: 0 to 255, but {@value #NEXT_DIRTY} is also valid, represents dirty.
 	 * 
 	 * @see java.io.FilterInputStream#read()
 	 * @see #getNextCode()
@@ -107,9 +105,9 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Returns true true if this unpacker has more elements. When this returns
-	 * true, subsequent call to {@link #getNextCodeType()} returns a code type.
-	 * If false, {@link #getNextCodeType()} will throw an EOFException.
+	 * Returns true true if this unpacker has more elements. When this returns true, subsequent call to
+	 * {@link #getNextCodeType()} returns a code type. If false, {@link #getNextCodeType()} will throw an
+	 * EOFException.
 	 * 
 	 * @return true if this unpacker has more elements to read
 	 */
@@ -148,12 +146,10 @@ public class MUnpacker extends FilterInputStream {
 	 * 这个方法功能等于调用{@link #getNextCode()}并赋值<code>nextByte = NEXT_DIRTY;</code><br>
 	 * 即缓存先读取缓存再使缓存无效化，无缓存直接从内部流读取，最后缓存总是无效的
 	 * 
-	 * @return the next byte of this input streamGusher as a signed 8-bit
-	 *         <code>byte</code>.
+	 * @return the next byte of this input streamGusher as a signed 8-bit <code>byte</code>.
 	 * @exception EOFException if this input streamGusher has reached the end.
-	 * @exception IOException the streamGusher has been closed and the contained
-	 *                input streamGusher does not support reading after close,
-	 *                or another I/O error occurs.
+	 * @exception IOException the streamGusher has been closed and the contained input streamGusher does not
+	 *                support reading after close, or another I/O error occurs.
 	 * @see java.io.FilterInputStream#in
 	 */
 	private final byte readNextByte() throws IOException {
@@ -273,12 +269,10 @@ public class MUnpacker extends FilterInputStream {
 	 * 读取下一个字节，这个字节会被缓存起来，以后都返回缓存值，除非调用read开头的方法或skip方法，会让缓存的字节无效化。<br>
 	 * 即有缓存就读取缓存值，无缓存直接从内部流读取并设置到缓存变量中，最后缓存总是有效的
 	 * 
-	 * @return the next byte of this input streamGusher or the cache byte as a
-	 *         signed 8-bit <code>byte</code>.
+	 * @return the next byte of this input streamGusher or the cache byte as a signed 8-bit <code>byte</code>.
 	 * @exception EOFException if this input streamGusher has reached the end.
-	 * @exception IOException the streamGusher has been closed and the contained
-	 *                input streamGusher does not support reading after close,
-	 *                or another I/O error occurs.
+	 * @exception IOException the streamGusher has been closed and the contained input streamGusher does not
+	 *                support reading after close, or another I/O error occurs.
 	 * @see java.io.FilterInputStream#in
 	 */
 	public byte getNextCode() throws IOException {
@@ -350,8 +344,7 @@ public class MUnpacker extends FilterInputStream {
 	 * 可以获取Byte，Short，Int， Long值，也许会抛出异常
 	 * 
 	 * @return a the primitive type int value
-	 * @throws MPackIntegerOverflowException 由于返回值是java
-	 *             int，对于UINT32，UINT64和INT64会有溢出异常
+	 * @throws MPackIntegerOverflowException 由于返回值是java int，对于UINT32，UINT64和INT64会有溢出异常
 	 * @throws MPackFormatException 类型不是整数的异常
 	 * @throws IOException
 	 */
@@ -526,9 +519,8 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Skip reading the specified number of bytes. Use this method only if you
-	 * know skipping data is safe. For simply skipping the next value, use
-	 * {@link #skipValue()}.
+	 * Skip reading the specified number of bytes. Use this method only if you know skipping data is safe. For
+	 * simply skipping the next value, use {@link #skipValue()}.
 	 * 
 	 * @param numBytes
 	 * @throws IOException
@@ -550,8 +542,7 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Skip the specified number of values, then move the cursor at the end of
-	 * the value
+	 * Skip the specified number of values, then move the cursor at the end of the value
 	 * 
 	 * @param valueCount
 	 * @throws IOException
@@ -673,26 +664,49 @@ public class MUnpacker extends FilterInputStream {
 		return EMPTY_STRING;
 	}
 
+	/**
+	 * unpack as a map of which the type is specified by the field asMapClass if it's not null or the HashMap
+	 * 
+	 * @param count the size of the map
+	 * @return the unpacked map
+	 * @throws IOException
+	 */
+	@SuppressWarnings("unchecked")
 	public Map<Object, Object> unpackMap(int count) throws IOException {
-		try {
-			// Constructor<Map> constructor =
-			// asMapClass.getConstructor(int.class);
-			// Map<Object, Object> map = constructor.newInstance(count);
-			@SuppressWarnings("unchecked")
-			Map<Object, Object> map = asMapClass.newInstance();
-			for (int i = 0; i < count; i++) {
-				Object key = unpack();
-				Object value = unpack();
-				map.put(key, value);
+		Map<Object, Object> map;
+		// Constructor<Map> constructor = asMapClass.getConstructor(int.class);
+		// Map<Object, Object> map = constructor.newInstance(count);
+		if (null == asMapClass) {
+			map = new HashMap<Object, Object>(count);
+		} else {
+			try {
+				map = asMapClass.newInstance();
+			} catch (InstantiationException e) {
+				throw new MPackFormatException("Unpack map with asMapClass = " + asMapClass.getName(), e);
+			} catch (IllegalAccessException e) {
+				throw new MPackFormatException("Unpack map with asMapClass = " + asMapClass.getName(), e);
 			}
-			return map;
-		} catch (InstantiationException e) {
-			throw new MPackFormatException("Unpack map with asMapClass = " + asMapClass.getName(), e);
-		} catch (IllegalAccessException e) {
-			throw new MPackFormatException("Unpack map with asMapClass = " + asMapClass.getName(), e);
 		}
+		for (int i = 0; i < count; i++) {
+			Object key = unpack();
+			Object value = unpack();
+			map.put(key, value);
+		}
+		return map;
 	}
 
+	/**
+	 * Unpack an array whose component type is the Object type. So, if a String Array is packed, a Object type
+	 * Array will be returned while unpacking.
+	 * 
+	 * <pre>
+	 * // java.lang.ClassCastException: [Ljava.lang.Object; cannot be cast to [Ljava.lang.String;
+	 * String[] strArray = (String[]) unpackArray(); // will throw a ClassCastException
+	 * </pre>
+	 * 
+	 * @return a Object type array
+	 * @throws IOException
+	 */
 	public Object[] unpackArray() throws IOException {
 		int arraySize = unpackArrayHeader();
 		if (arraySize > 0) {
@@ -720,9 +734,15 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * 默认映射规则：NIL->null, BOOLEAN->Boolean, INTEGER->Number(UINT64->BigInteger,
-	 * Other->Long), FLOAT->Double, STRING->String, BINARY->byte[],
-	 * ARRAY->Object[], MAP->Object[], EXTENSION->
+	 * 默认映射规则：NIL->null, BOOLEAN->Boolean, INTEGER->Number(UINT64->BigInteger, Other->Long), FLOAT->Double,
+	 * STRING->String, BINARY->byte[], ARRAY->Object[], MAP->Object[], EXTENSION->
+	 * <p/>
+	 * Note, if a String Array is packed, a Object Array will be returned while unpacking.
+	 * 
+	 * <pre>
+	 * // java.lang.ClassCastException: [Ljava.lang.Object; cannot be cast to [Ljava.lang.String;
+	 * String[] strArray = (String[]) unpack(); // will throw a ClassCastException
+	 * </pre>
 	 * 
 	 * @param options
 	 * @return
@@ -910,8 +930,8 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Read the specified number of values to an {@link OutputStream}, then move
-	 * the cursor at the end of the value
+	 * Read the specified number of values to an {@link OutputStream}, then move the cursor at the end of the
+	 * value
 	 * 
 	 * @param count the specified number of values to read
 	 * @param out the <code>OutputStream</code> to write to
@@ -924,8 +944,8 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * Read the specified number of values to an {@link OutputStream}, then move
-	 * the cursor at the end of the value
+	 * Read the specified number of values to an {@link OutputStream}, then move the cursor at the end of the
+	 * value
 	 * 
 	 * @param count the specified number of values to read
 	 * @param out the <code>OutputStream</code> to write to
@@ -1087,8 +1107,7 @@ public class MUnpacker extends FilterInputStream {
 	}
 
 	/**
-	 * java int,long 无法表示小于{@link Integer#MIN_VALUE}，{@link Long#MIN_VALUE}
-	 * 的有符号整数
+	 * java int,long 无法表示小于{@link Integer#MIN_VALUE}，{@link Long#MIN_VALUE} 的有符号整数
 	 */
 	private static MPackIntegerOverflowException overflowI(long signedNumber) {
 		return new MPackIntegerOverflowException(signedNumber);
